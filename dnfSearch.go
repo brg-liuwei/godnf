@@ -27,7 +27,7 @@ func searchCondCheck(conds []Cond) error {
 	return nil
 }
 
-func (h *Handler) Search(conds []Cond) (docs []int, err error) {
+func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []int, err error) {
 	if err := searchCondCheck(conds); err != nil {
 		return nil, err
 	}
@@ -40,18 +40,18 @@ func (h *Handler) Search(conds []Cond) (docs []int, err error) {
 	if len(termids) == 0 {
 		return nil, errors.New("All cond are not in inverse list")
 	}
-	return h.doSearch(termids), nil
+	return h.doSearch(termids, attrFilter), nil
 }
 
-func (h *Handler) doSearch(terms []int) (docs []int) {
+func (h *Handler) doSearch(terms []int, attrFilter func(DocAttr) bool) (docs []int) {
 	conjs := h.getConjs(terms)
 	if len(conjs) == 0 {
 		return nil
 	}
-	return h.getDocs(conjs)
+	return h.getDocs(conjs, attrFilter)
 }
 
-func (h *Handler) getDocs(conjs []int) (docs []int) {
+func (h *Handler) getDocs(conjs []int, attrFilter func(DocAttr) bool) (docs []int) {
 	h.conjRvsLock.RLock()
 	defer h.conjRvsLock.RUnlock()
 
@@ -66,10 +66,14 @@ func (h *Handler) getDocs(conjs []int) (docs []int) {
 			continue
 		}
 		for _, doc := range doclist {
+			h.docs_.RLock()
+			ok := attrFilter(h.docs_.docs[doc].attr)
+			h.docs_.RUnlock()
+			if !ok {
+				continue
+			}
 			wg.Add(1)
 			go func(h *Handler, docid int, w *sync.WaitGroup) {
-				h.docs_.RLock()
-				defer h.docs_.RUnlock()
 				set.Add(docid)
 				w.Done()
 			}(h, doc, &wg)

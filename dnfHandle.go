@@ -29,7 +29,7 @@ func NewHandler() *Handler {
 	conjSzRvs_ := make([][]termRvs, 16)
 	conjSzRvs_[0] = termrvslist
 
-	return &Handler{
+	h := &Handler{
 		docs_:   &docList{docs: make([]Doc, 0, 16)},
 		conjs_:  &conjList{conjs: make([]Conj, 0, 16)},
 		amts_:   &amtList{amts: make([]Amt, 0, 16)},
@@ -39,6 +39,11 @@ func NewHandler() *Handler {
 		conjRvs:   make([][]int, 0),
 		conjSzRvs: conjSzRvs_,
 	}
+	h.docs_.h = h
+	h.conjs_.h = h
+	h.amts_.h = h
+	h.terms_.h = h
+	return h
 }
 
 func GetHandler() *Handler {

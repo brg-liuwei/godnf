@@ -61,12 +61,11 @@ func (this *Term) ToString() string {
 	return fmt.Sprintf("( %s  %s )", this.key, this.val)
 }
 
-func (this *Amt) ToString() string {
+func (this *Amt) ToString(h *Handler) string {
 	if len(this.terms) == 0 {
 		return ""
 	}
 
-	h := GetHandler()
 	h.terms_.RLock()
 	defer h.terms_.RUnlock()
 
@@ -88,17 +87,15 @@ func (this *Amt) ToString() string {
 	return s + " }"
 }
 
-func (this *Conj) ToString() string {
+func (this *Conj) ToString(h *Handler) string {
 	if len(this.amts) == 0 {
 		return ""
 	}
-	/* bugs to fix here */
-	h := GetHandler()
 	h.amts_.RLock()
 	defer h.amts_.RUnlock()
 	s := "( "
 	for i, idx := range this.amts {
-		s += h.amts_.amts[idx].ToString()
+		s += h.amts_.amts[idx].ToString(h)
 		if i+1 < len(this.amts) {
 			s += " ∩ "
 		}
@@ -106,20 +103,19 @@ func (this *Conj) ToString() string {
 	return s + " )"
 }
 
-func (this *Doc) ToString() (s string) {
+func (this *Doc) ToString(h *Handler) (s string) {
 	if len(this.conjs) == 0 {
 		s = "len(conjs == 0)"
 	}
-	h := GetHandler()
 	h.conjs_.RLock()
 	defer h.conjs_.RUnlock()
 	for i, idx := range this.conjs {
-		s += h.conjs_.conjs[idx].ToString()
+		s += h.conjs_.conjs[idx].ToString(h)
 		if i+1 < len(this.conjs) {
 			s += " ∪ "
 		}
 	}
-	s += "\n"
+	s += "\nAttr: "
 	s += this.attr.ToString()
 	return
 }
@@ -129,7 +125,7 @@ func (this *docList) display() {
 	defer this.RUnlock()
 	DEBUG("len docs == ", len(this.docs))
 	for i, doc := range this.docs {
-		DEBUG("Doc[", i, "]:", doc.ToString())
+		DEBUG("Doc[", i, "]:", doc.ToString(this.h))
 	}
 }
 
@@ -148,15 +144,15 @@ func (this *docList) docId2Map(docid int) map[string]interface{} {
 	return m
 }
 
-func DocId2Map(docid int) map[string]interface{} {
-	return GetHandler().docs_.docId2Map(docid)
+func (h *Handler) DocId2Map(docid int) map[string]interface{} {
+	return h.docs_.docId2Map(docid)
 }
 
 func (this *conjList) display() {
 	this.RLock()
 	defer this.RUnlock()
 	for i, conj := range this.conjs {
-		DEBUG("Conj[", i, "]", "size:", conj.size, conj.ToString())
+		DEBUG("Conj[", i, "]", "size:", conj.size, conj.ToString(this.h))
 	}
 }
 
@@ -164,7 +160,7 @@ func (this *amtList) display() {
 	this.RLock()
 	defer this.RUnlock()
 	for i, amt := range this.amts {
-		DEBUG("Amt[", i, "]:", amt.ToString())
+		DEBUG("Amt[", i, "]:", amt.ToString(this.h))
 	}
 }
 
@@ -184,40 +180,38 @@ func display(obj displayer) {
 	obj.display()
 }
 
-func DisplayDocs() {
-	display(GetHandler().docs_)
+func (h *Handler) DisplayDocs() {
+	display(h.docs_)
 }
 
-func DisplayConjs() {
-	display(GetHandler().conjs_)
+func (h *Handler) DisplayConjs() {
+	display(h.conjs_)
 }
 
-func DisplayAmts() {
-	display(GetHandler().amts_)
+func (h *Handler) DisplayAmts() {
+	display(h.amts_)
 }
 
-func DisplayTerms() {
-	display(GetHandler().terms_)
+func (h *Handler) DisplayTerms() {
+	display(h.terms_)
 }
 
-func DisplayConjRevs() {
+func (h *Handler) DisplayConjRevs() {
 	DEBUG("reverse list 1: ")
-	h := GetHandler()
 	h.conjRvsLock.RLock()
 	defer h.conjRvsLock.RUnlock()
 	for i, docs := range h.conjRvs {
 		s := fmt.Sprint("conj[", i, "]: -> ")
 		for _, id := range docs {
-			s += strconv.Itoa(id) + " -> "
+			s += strconv.Itoa(id) + " "
 		}
 		DEBUG(s)
 	}
 }
 
-func DisplayConjRevs2() {
+func (h *Handler) DisplayConjRevs2() {
 	DEBUG("reverse list 2: ")
 
-	h := GetHandler()
 	h.conjSzRvsLock.RLock()
 	defer h.conjSzRvsLock.RUnlock()
 
@@ -239,7 +233,7 @@ func DisplayConjRevs2() {
 				} else {
 					op = "∉"
 				}
-				s += fmt.Sprintf("(%d %s) -> ", cpair.conjId, op)
+				s += fmt.Sprintf("(%d %s) ", cpair.conjId, op)
 			}
 			DEBUG("   ", s)
 		}

@@ -276,21 +276,25 @@ func (this *Term) Equal(term *Term) bool {
 type docList struct {
 	sync.RWMutex
 	docs []Doc
+	h    *Handler
 }
 
 type conjList struct {
 	sync.RWMutex
 	conjs []Conj
+	h     *Handler
 }
 
 type amtList struct {
 	sync.RWMutex
 	amts []Amt
+	h    *Handler
 }
 
 type termList struct {
 	sync.RWMutex
 	terms []Term
+	h     *Handler
 }
 
 func (this *docList) Add(doc *Doc, h *Handler) int {
