@@ -147,24 +147,13 @@ func (h *Handler) amtBuild(key string, vals []string, belong bool) (amtId int) {
        conj2: ( state ∈ { CA } and gender ∈ { M } )
 */
 type Doc struct {
-	id         int    /* unique id */
-	docid      string /* sent by doc adder */
-	name       string /* name of doc, for ad management */
-	dnf        string /* dnf decription */
-	conjSorted bool   /* is conjs slice sorted? */
-	conjs      []int  /* conjunction ids */
-	active     bool
+	id         int     /* unique id */
+	docid      string  /* sent by doc adder */
+	name       string  /* name of doc, for ad management */
+	dnf        string  /* dnf decription */
+	conjSorted bool    /* is conjs slice sorted? */
+	conjs      []int   /* conjunction ids */
 	attr       DocAttr /* ad attr */
-}
-
-func NewDoc(docid string, dnf string, name string, active bool, attr DocAttr) *Doc {
-	return &Doc{
-		docid:  docid,
-		dnf:    dnf,
-		name:   name,
-		active: active,
-		attr:   attr,
-	}
 }
 
 func (doc *Doc) GetName() string {
@@ -301,7 +290,6 @@ func (this *docList) Add(doc *Doc, h *Handler) int {
 	this.Lock()
 	defer this.Unlock()
 	doc.id = len(this.docs)
-	doc.active = true
 	if !doc.conjSorted {
 		sort.IntSlice(doc.conjs).Sort()
 		doc.conjSorted = true
