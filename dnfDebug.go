@@ -135,7 +135,6 @@ func (this *docList) docId2Map(docid int) map[string]interface{} {
 	}
 	this.RLock()
 	defer this.RUnlock()
-	m := make(map[string]interface{})
 	doc := &this.docs[docid]
 	return doc.attr.ToMap()
 }
