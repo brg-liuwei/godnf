@@ -33,7 +33,7 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 	}
 	termids := make([]int, 0)
 	for i := 0; i < len(conds); i++ {
-		if id, ok := h.termMap[conds[i].Key+"%"+conds[i].Val]; ok {
+		if id, ok := h.termMap[conds[i].Key]; ok {
 			termids = append(termids, id)
 		}
 	}

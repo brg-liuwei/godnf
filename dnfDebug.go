@@ -137,11 +137,7 @@ func (this *docList) docId2Map(docid int) map[string]interface{} {
 	defer this.RUnlock()
 	m := make(map[string]interface{})
 	doc := &this.docs[docid]
-	m["_id"] = doc.docid
-	for k, v := range doc.attr.ToMap() {
-		m[k] = v
-	}
-	return m
+	return doc.attr.ToMap()
 }
 
 func (h *Handler) DocId2Map(docid int) map[string]interface{} {
