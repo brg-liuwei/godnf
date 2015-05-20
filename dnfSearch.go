@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"godnf/set"
+	"github.com/brg-liuwei/godnf/set"
 )
 
 type Cond struct {
