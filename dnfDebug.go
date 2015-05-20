@@ -1,6 +1,7 @@
 package godnf
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -127,6 +128,20 @@ func (this *docList) display() {
 	for i, doc := range this.docs {
 		DEBUG("Doc[", i, "]:", doc.ToString(this.h))
 	}
+}
+
+func (this *docList) docId2Attr(docid int) (DocAttr, error) {
+	if len(this.docs) <= docid {
+		return nil, errors.New("docid over flow")
+	}
+	this.RLock()
+	defer this.RUnlock()
+	doc := &this.docs[docid]
+	return doc.attr, nil
+}
+
+func (h *Handler) DocId2Attr(docid int) (DocAttr, error) {
+	return h.docs_.docId2Attr(docid)
 }
 
 func (this *docList) docId2Map(docid int) map[string]interface{} {
