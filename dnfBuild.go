@@ -336,7 +336,7 @@ func (this *amtList) Add(amt *Amt, h *Handler) (amtId int) {
 }
 
 func (this *termList) Add(term *Term, h *Handler) (termId int) {
-	if tid, ok := h.termMap[term.key]; ok {
+	if tid, ok := h.termMap[term.key+"%"+term.val]; ok {
 		term.id = tid
 		return term.id
 	}
@@ -344,7 +344,7 @@ func (this *termList) Add(term *Term, h *Handler) (termId int) {
 	defer this.Unlock()
 	term.id = len(this.terms)
 	this.terms = append(this.terms, *term)
-	h.termMap[term.key] = term.id
+	h.termMap[term.key+"%"+term.val] = term.id
 	return term.id
 }
 

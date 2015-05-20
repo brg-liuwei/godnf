@@ -33,12 +33,9 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 	}
 	termids := make([]int, 0)
 	for i := 0; i < len(conds); i++ {
-		if id, ok := h.termMap[conds[i].Key]; ok {
+		if id, ok := h.termMap[conds[i].Key+"%"+conds[i].Val]; ok {
 			termids = append(termids, id)
 		}
-	}
-	if len(termids) == 0 {
-		return nil, errors.New("All cond are not in inverse list")
 	}
 	return h.doSearch(termids, attrFilter), nil
 }
