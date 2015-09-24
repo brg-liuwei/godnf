@@ -1,7 +1,10 @@
-install:
-    go get github.com/brg-liuwei/godnf
+# install:
+---
 
-example:
+    go get -u github.com/brg-liuwei/godnf
+
+# example:
+---
 
     package main
     

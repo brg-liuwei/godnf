@@ -90,7 +90,7 @@ func (set *IntSet) ToSlice() []int {
 	for k, _ := range set.data {
 		rc = append(rc, k)
 	}
-	set.RLock()
+	set.RUnlock()
 	if !sort.IntsAreSorted(rc) {
 		sort.IntSlice(rc).Sort()
 	}
