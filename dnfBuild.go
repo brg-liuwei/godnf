@@ -224,11 +224,11 @@ type Amt struct {
 func (this *Amt) Equal(amt *Amt) bool {
 	if !this.termSorted {
 		sort.IntSlice(this.terms).Sort()
-		this.termSorted = false
+		this.termSorted = true
 	}
 	if !amt.termSorted {
 		sort.IntSlice(amt.terms).Sort()
-		amt.termSorted = false
+		amt.termSorted = true
 	}
 	if len(this.terms) != len(amt.terms) {
 		return false
