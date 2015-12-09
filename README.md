@@ -3,6 +3,12 @@
 
     go get -u github.com/brg-liuwei/godnf
 
+# testing:
+
+type `make test` to run example and benchmark
+
+    make test
+
 # example:
 ---
 
@@ -10,7 +16,7 @@
     
     import (
     	"fmt"
-    	dnf "godnf"
+    	dnf "github.com/brg-liuwei/godnf"
     )
     
     type attr struct {
