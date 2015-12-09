@@ -1,16 +1,20 @@
-# install:
----
+# Godnf: 
+
+___Implementing boolean expression indexing algorithm (which is very useful in computational advertising area) by golang___
+
+___For details, see this paper: [Indexing Boolean Expressions](http://theory.stanford.edu/~sergei/papers/vldb09-indexing.pdf)___
+
+# Installation:
 
     go get -u github.com/brg-liuwei/godnf
 
-# testing:
+# Testing:
 
-type `make test` to run example and benchmark
+Type `make test` to run example and benchmark
 
     make test
 
-# example:
----
+# Example:
 
     package main
     
