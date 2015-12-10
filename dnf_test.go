@@ -89,4 +89,22 @@ func BenchmarkRetrieval(b *testing.B) {
 			b.Error("Search error: ", err)
 		}
 	}
+
+	b.ReportAllocs()
+}
+
+func BenchmarkParallelRetrieval(b *testing.B) {
+	h := createDnfHandler()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := h.Search(conds, DocFilter)
+			if err != nil {
+				b.Error("Search error: ", err)
+			}
+		}
+	})
+
+	b.ReportAllocs()
 }
