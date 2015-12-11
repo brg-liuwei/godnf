@@ -74,7 +74,7 @@ func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int) {
 
 	conj := &Conj{amts: make([]int, 0)}
 
-	ASSERT((*dnf)[i] == '(')
+	ASSERT((*dnf)[i] == leftDelimOfConj)
 
 	for {
 		/* get assignment key */
@@ -96,17 +96,17 @@ func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int) {
 
 		/* get assignment vals */
 		i = skipSpace(dnf, i)
-		ASSERT((*dnf)[i] == '{')
+		ASSERT((*dnf)[i] == leftDelimOfSet)
 		vals = make([]string, 0, 1)
 		for {
 			i = skipSpace(dnf, i+1)
 			val, i = getString(dnf, i)
 			vals = append(vals, val)
 			i = skipSpace(dnf, i)
-			if (*dnf)[i] == '}' {
+			if (*dnf)[i] == rightDelimOfSet {
 				break
 			}
-			ASSERT((*dnf)[i] == ',')
+			ASSERT((*dnf)[i] == separatorOfSet)
 		}
 		amtId := h.amtBuild(key, vals, belong)
 		conj.amts = append(conj.amts, amtId)
@@ -116,7 +116,7 @@ func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int) {
 
 		/* get next assignment or end of this conjunction */
 		i = skipSpace(dnf, i+1)
-		if (*dnf)[i] == ')' {
+		if (*dnf)[i] == rightDelimOfConj {
 			conjId = h.conjs_.Add(conj, h)
 			endIndex = i
 

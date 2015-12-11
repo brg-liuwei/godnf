@@ -4,6 +4,34 @@ import (
 	"errors"
 )
 
+var leftDelimOfConj, rightDelimOfConj byte = byte('('), byte(')')
+var leftDelimOfSet, rightDelimOfSet byte = byte('{'), byte('}')
+var separatorOfSet byte = byte(',')
+
+func SetDelimOfConj(left, right rune) {
+	leftDelimOfConj, rightDelimOfConj = byte(left), byte(right)
+}
+
+func GetDelimOfConj() (left, right rune) {
+	return rune(leftDelimOfConj), rune(rightDelimOfConj)
+}
+
+func SetDelimOfSet(left, right rune) {
+	leftDelimOfSet, rightDelimOfSet = byte(left), byte(right)
+}
+
+func GetDelimOfSet() (left, right rune) {
+	return rune(leftDelimOfSet), rune(rightDelimOfSet)
+}
+
+func SetSeparatorOfSet(sep rune) {
+	separatorOfSet = byte(sep)
+}
+
+func GetSeparatorOfSet() rune {
+	return rune(separatorOfSet)
+}
+
 var DnfFmtError error = errors.New("dnf format error")
 
 func skipSpace(s *string, i int) int {
@@ -24,11 +52,11 @@ func skipString(s *string, i int) (j int) {
 		switch (*s)[j] {
 		case ' ':
 			return
-		case ',':
+		case separatorOfSet:
 			return
-		case '}':
+		case leftDelimOfSet:
 			return
-		case '{':
+		case rightDelimOfSet:
 			return
 		}
 	}
@@ -53,12 +81,12 @@ func DnfCheck(dnf string) error {
 	return dnfStart(&dnf, skipSpace(&dnf, 0))
 }
 
-/* start: get '(' */
+/* start: get leftDelimOfConj, default is '(' */
 func dnfStart(dnf *string, i int) error {
 	if !dnfIdxCheck(dnf, i, "start dnf idx error") {
 		return DnfFmtError
 	}
-	if (*dnf)[i] != '(' {
+	if (*dnf)[i] != leftDelimOfConj {
 		DEBUG("dnf start error, dnf[", i, "] =", string((*dnf)[i]))
 		return DnfFmtError
 	}
@@ -112,12 +140,12 @@ func dnfState3(dnf *string, i int, m map[string]bool) error {
 	return DnfFmtError
 }
 
-/* state4: get '{' */
+/* state4: get leftDelimOfSet, default is '{' */
 func dnfState4(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState4 check error") {
 		return DnfFmtError
 	}
-	if (*dnf)[i] != '{' {
+	if (*dnf)[i] != leftDelimOfSet {
 		DEBUG("state4 internal error")
 		return DnfFmtError
 	}
@@ -136,8 +164,8 @@ func dnfState5(dnf *string, i int, m map[string]bool) error {
 		return DnfFmtError
 	}
 
-	val := string((*dnf)[i:j])
-	_ = val
+	// val := string((*dnf)[i:j])
+	// _ = val
 
 	return dnfState6(dnf, skipSpace(dnf, j), m)
 }
@@ -147,10 +175,10 @@ func dnfState6(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState6 check error") {
 		return DnfFmtError
 	}
-	if (*dnf)[i] == ',' {
+	if (*dnf)[i] == separatorOfSet {
 		return dnfState7(dnf, skipSpace(dnf, i+1), m)
 	}
-	if (*dnf)[i] == '}' {
+	if (*dnf)[i] == rightDelimOfSet {
 		return dnfState8(dnf, skipSpace(dnf, i+1), m)
 	}
 	DEBUG("state6 internal error")
@@ -169,8 +197,8 @@ func dnfState7(dnf *string, i int, m map[string]bool) error {
 		return DnfFmtError
 	}
 
-	val := string((*dnf)[i:j])
-	_ = val
+	// val := string((*dnf)[i:j])
+	// _ = val
 
 	return dnfState6(dnf, skipSpace(dnf, j), m)
 }
@@ -183,7 +211,7 @@ func dnfState8(dnf *string, i int, m map[string]bool) error {
 	if i+3 < len(*dnf) && string((*dnf)[i:i+3]) == "and" {
 		return dnfState1(dnf, skipSpace(dnf, i+3), m)
 	}
-	if (*dnf)[i] == ')' {
+	if (*dnf)[i] == rightDelimOfConj {
 		return dnfState9(dnf, skipSpace(dnf, i+1), m)
 	}
 	DEBUG("state8 internal error")
