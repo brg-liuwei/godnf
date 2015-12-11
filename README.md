@@ -14,6 +14,28 @@ Type `make test` to run example and benchmark
 
     make test
 
+# DNF(Disjunctive Normal Form) syntax:
+
+* DNF
+    
+    ( CONJUNCTION ) [ or ( CONJUNCTION ) ... ]
+
+* CONJUNCTION
+    
+    KEY [not] in SET [ and KEY [not] in SET ... ]
+
+* SET
+    
+    { VAL [, VAL, VAL] }
+    
+_For example, all strings below are DNFs:_
+
+    (region in {SH, BJ})
+    (region in {SH, BJ} and age not in {3})
+    (region in {SH, BJ} and age not in {3} and gender in {male})
+    (region in {SH, BJ} and age not in {3, 4}) or (gender in {male})
+    (region in {SH, BJ} and age not in {3, 4}) or (gender in {male} and age in {2})
+
 # Example:
 
     package main
