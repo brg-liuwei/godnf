@@ -1,6 +1,7 @@
 package godnf
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -156,6 +157,45 @@ func (this *docList) docId2Map(docid int) map[string]interface{} {
 
 func (h *Handler) DocId2Map(docid int) map[string]interface{} {
 	return h.docs_.docId2Map(docid)
+}
+
+func (h *Handler) DumpById() string {
+	var s []interface{}
+	for _, doc := range h.docs_.docs {
+		s = append(s, map[string]interface{}{
+			"docid": doc.docid,
+			"name":  doc.name,
+			"dnf":   doc.dnf,
+		})
+	}
+	b, _ := json.Marshal(s)
+	return string(b)
+}
+
+func (h *Handler) DumpByDocId() string {
+	m := make(map[string]interface{})
+	for _, doc := range h.docs_.docs {
+		m[doc.docid] = map[string]interface{}{
+			"id":   doc.id,
+			"name": doc.name,
+			"dnf":  doc.dnf,
+		}
+	}
+	b, _ := json.Marshal(m)
+	return string(b)
+}
+
+func (h *Handler) DumpByName() string {
+	m := make(map[string]interface{})
+	for _, doc := range h.docs_.docs {
+		m[doc.name] = map[string]interface{}{
+			"id":    doc.id,
+			"docid": doc.docid,
+			"dnf":   doc.dnf,
+		}
+	}
+	b, _ := json.Marshal(m)
+	return string(b)
 }
 
 func (this *conjList) display() {

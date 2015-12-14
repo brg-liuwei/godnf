@@ -14,7 +14,7 @@ Type `make test` to run example and benchmark
 
     make test
 
-# DNF(Disjunctive Normal Form) syntax:
+# DNF (Disjunctive Normal Form) syntax:
 
 * DNF
     
