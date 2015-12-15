@@ -40,6 +40,10 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 	return h.doSearch(termids, attrFilter), nil
 }
 
+func (h *Handler) SearchAll(conds []Cond) (docs []int, err error) {
+	return h.Search(conds, func(DocAttr) bool { return true })
+}
+
 func (h *Handler) doSearch(terms []int, attrFilter func(DocAttr) bool) (docs []int) {
 	conjs := h.getConjs(terms)
 	if len(conjs) == 0 {
