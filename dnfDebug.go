@@ -166,6 +166,7 @@ func (h *Handler) DumpById() string {
 			"docid": doc.docid,
 			"name":  doc.name,
 			"dnf":   doc.dnf,
+			"attr":  doc.attr.ToMap(),
 		})
 	}
 	b, _ := json.Marshal(s)
@@ -179,6 +180,7 @@ func (h *Handler) DumpByDocId() string {
 			"id":   doc.id,
 			"name": doc.name,
 			"dnf":  doc.dnf,
+			"attr": doc.attr.ToMap(),
 		}
 	}
 	b, _ := json.Marshal(m)
@@ -192,6 +194,7 @@ func (h *Handler) DumpByName() string {
 			"id":    doc.id,
 			"docid": doc.docid,
 			"dnf":   doc.dnf,
+			"attr":  doc.attr.ToMap(),
 		}
 	}
 	b, _ := json.Marshal(m)
