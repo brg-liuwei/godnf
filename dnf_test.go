@@ -1,9 +1,11 @@
-package godnf
+package godnf_test
 
 import (
 	"fmt"
 	"strconv"
 	"testing"
+
+	dnf "github.com/brg-liuwei/godnf"
 )
 
 type attr struct {
@@ -23,7 +25,7 @@ func (this attr) ToMap() map[string]interface{} {
 	}
 }
 
-func DocFilter(attr DocAttr) bool { return true }
+func DocFilter(attr dnf.DocAttr) bool { return true }
 
 var dnfDesc []string = []string{
 	"(region in {SH, BJ } and age not in {3,4} )",
@@ -39,15 +41,15 @@ var dnfDesc []string = []string{
 	"(OS in {Windows, MacOS} and region not in {SH})",
 }
 
-var conds []Cond = []Cond{
+var conds []dnf.Cond = []dnf.Cond{
 	{"region", "BJ"},
 	{"age", "3"},
 	{"OS", "MacOS"},
 }
 
-func createDnfHandler(descs []string) *Handler {
-	SetDebug(true)
-	h := NewHandler()
+func createDnfHandler(descs []string) *dnf.Handler {
+	dnf.SetDebug(true)
+	h := dnf.NewHandler()
 	for i, desc := range descs {
 		name := "doc-" + strconv.Itoa(i)
 		err := h.AddDoc(name, strconv.Itoa(i), desc, attr{
@@ -135,22 +137,23 @@ var dnfDescWithCustmizedDelim []string = []string{
 	"< region in [ SH. BJ. CD. GZ ] and age in [ 2. 3 ] >",
 	"< region not in [ SH. BJ ] and age not in [ 4 ] >",
 	"< OS in [ Windows. MacOS ] and region not in [ SH ] >",
+	"< size in [300*250] and adx in [1,2,3] and region in [1156110000,1156120000,1156130000,1156140000,1156150000,1156210000,1156220000,1156230000,1156310000,1156330000,1156340000,1156350000,1156360000,1156370000]>",
 }
 
 func ExampleRetrievalWithCustmizedDelim() {
-	lconj, rconj := GetDelimOfConj()
-	lset, rset := GetDelimOfSet()
-	sep := GetSeparatorOfSet()
+	lconj, rconj := dnf.GetDelimOfConj()
+	lset, rset := dnf.GetDelimOfSet()
+	sep := dnf.GetSeparatorOfSet()
 
-	SetDelimOfConj('<', '>')
-	SetDelimOfSet('[', ']')
-	SetSeparatorOfSet('.')
+	dnf.SetDelimOfConj('<', '>')
+	dnf.SetDelimOfSet('[', ']')
+	dnf.SetSeparatorOfSet('.')
 
 	h := createDnfHandler(dnfDescWithCustmizedDelim)
 
-	SetDelimOfSet(lset, rset)
-	SetDelimOfConj(lconj, rconj)
-	SetSeparatorOfSet(sep)
+	dnf.SetDelimOfSet(lset, rset)
+	dnf.SetDelimOfConj(lconj, rconj)
+	dnf.SetSeparatorOfSet(sep)
 
 	docs, err := h.Search(conds, DocFilter)
 	if err != nil {

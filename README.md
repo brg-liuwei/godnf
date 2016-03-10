@@ -10,9 +10,13 @@ ___For details, see this paper: [Indexing Boolean Expressions](http://theory.sta
 
 # Testing:
 
-Type `make test` to run example and benchmark
+Type `make test` to run example
 
     make test
+
+Type `make bench` to run benchmark
+
+    make bench
 
 # DNF (Disjunctive Normal Form) syntax:
 
@@ -109,3 +113,4 @@ _For example, all strings below are DNFs:_
     	fmt.Println()
     	h.DisplayConjRevs2()
     }
+

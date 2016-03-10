@@ -1,5 +1,5 @@
 
-.PHONY: all help test
+.PHONY: help test bench clean
 
 VARS = vars.mk
 
@@ -7,13 +7,14 @@ VARS = vars.mk
 $(shell ./make_config.sh ${VARS})
 include ${VARS}
 
-all: help
-
 help:
 	@echo "Usage: use \`make test\` to run example and benchmark"
 
 test:
-	go test -bench="." -cpu=${NCPU}
+	go test github.com/brg-liuwei/godnf
+
+bench:
+	go test github.com/brg-liuwei/godnf -bench="." -cpu=${NCPU}
 
 clean:
 	rm -rf ${VARS}
