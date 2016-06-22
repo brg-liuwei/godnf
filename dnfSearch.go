@@ -3,7 +3,6 @@ package godnf
 import (
 	"errors"
 	"sort"
-	"sync"
 
 	"github.com/brg-liuwei/godnf/set"
 )
@@ -58,8 +57,6 @@ func (h *Handler) getDocs(conjs []int, attrFilter func(DocAttr) bool) (docs []in
 
 	set := set.NewIntSet()
 
-	var wg sync.WaitGroup
-
 	for _, conj := range conjs {
 		ASSERT(conj < len(h.conjRvs))
 		doclist := h.conjRvs[conj]
@@ -73,15 +70,10 @@ func (h *Handler) getDocs(conjs []int, attrFilter func(DocAttr) bool) (docs []in
 			if !ok {
 				continue
 			}
-			wg.Add(1)
-			go func(h *Handler, docid int, w *sync.WaitGroup) {
-				set.Add(docid)
-				w.Done()
-			}(h, doc, &wg)
+			set.Add(doc, false)
 		}
 	}
-	wg.Wait()
-	return set.ToSlice()
+	return set.ToSlice(false)
 }
 
 func (h *Handler) getConjs(terms []int) (conjs []int) {
@@ -112,7 +104,7 @@ func (h *Handler) getConjs(terms []int) (conjs []int) {
 				termlist[idx].cList != nil {
 
 				for _, pair := range termlist[idx].cList {
-					countSet.Add(pair.conjId, pair.belong)
+					countSet.Add(pair.conjId, pair.belong, false)
 				}
 			}
 		}
@@ -121,12 +113,12 @@ func (h *Handler) getConjs(terms []int) (conjs []int) {
 		if i == 0 {
 			for _, pair := range termlist[0].cList {
 				ASSERT(pair.belong == true)
-				countSet.Add(pair.conjId, pair.belong)
+				countSet.Add(pair.conjId, pair.belong, false)
 			}
 		}
 
-		conjSet.AddSlice(countSet.ToSlice())
+		conjSet.AddSlice(countSet.ToSlice(false), false)
 	}
 
-	return conjSet.ToSlice()
+	return conjSet.ToSlice(false)
 }

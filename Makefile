@@ -12,6 +12,7 @@ help:
 
 test:
 	go test github.com/brg-liuwei/godnf
+	go test github.com/brg-liuwei/godnf/set -test.v
 
 bench:
 	go test github.com/brg-liuwei/godnf -bench="." -cpu=${NCPU}

@@ -22,9 +22,11 @@ func NewCountSet(count int) *CountSet {
 	}
 }
 
-func (set *CountSet) Add(id int, post bool) {
-	set.Lock()
-	defer set.Unlock()
+func (set *CountSet) Add(id int, post bool, useMutex bool) {
+	if useMutex {
+		set.Lock()
+		defer set.Unlock()
+	}
 
 	if !post {
 		set.negetive[id] = 1
@@ -39,21 +41,28 @@ func (set *CountSet) Add(id int, post bool) {
 	}
 }
 
-func (set *CountSet) ToSlice() []int {
-	set.Lock()
+func (set *CountSet) ToSlice(useMutex bool) []int {
+	var lock, unlock, rlock, runlock func()
+	if useMutex {
+		lock, unlock, rlock, runlock = set.Lock, set.Unlock, set.RLock, set.Unlock
+	} else {
+		nop := func() {}
+		lock, unlock, rlock, runlock = nop, nop, nop, nop
+	}
+	lock()
 	for k, _ := range set.negetive {
 		if _, ok := set.result[k]; ok {
 			delete(set.result, k)
 		}
 	}
-	set.Unlock()
+	unlock()
 
-	set.RLock()
+	rlock()
 	rc := make([]int, 0, len(set.result))
 	for k, _ := range set.result {
 		rc = append(rc, k)
 	}
-	set.RUnlock()
+	runlock()
 
 	if !sort.IntsAreSorted(rc) {
 		sort.IntSlice(rc).Sort()
@@ -70,27 +79,39 @@ func NewIntSet() *IntSet {
 	return &IntSet{data: make(map[int]bool)}
 }
 
-func (set *IntSet) Add(elem int) {
-	set.Lock()
-	defer set.Unlock()
+func (set *IntSet) Add(elem int, useMutex bool) {
+	if useMutex {
+		set.Lock()
+		defer set.Unlock()
+	}
 	set.data[elem] = true
 }
 
-func (set *IntSet) AddSlice(elems []int) {
-	set.Lock()
-	defer set.Unlock()
+func (set *IntSet) AddSlice(elems []int, useMutex bool) {
+	if useMutex {
+		set.Lock()
+		defer set.Unlock()
+	}
 	for _, elem := range elems {
 		set.data[elem] = true
 	}
 }
 
-func (set *IntSet) ToSlice() []int {
-	set.RLock()
+func (set *IntSet) ToSlice(useMutex bool) []int {
+	var rlock, runlock func()
+	if useMutex {
+		rlock, runlock = set.RLock, set.RUnlock
+	} else {
+		rlock, runlock = func() {}, func() {}
+	}
+
+	rlock()
 	rc := make([]int, 0, len(set.data))
 	for k, _ := range set.data {
 		rc = append(rc, k)
 	}
-	set.RUnlock()
+	runlock()
+
 	if !sort.IntsAreSorted(rc) {
 		sort.IntSlice(rc).Sort()
 	}
