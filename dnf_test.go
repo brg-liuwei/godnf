@@ -50,6 +50,7 @@ var conds []dnf.Cond = []dnf.Cond{
 func createDnfHandler(descs []string) *dnf.Handler {
 	dnf.SetDebug(true)
 	h := dnf.NewHandler()
+	// h := dnf.NewHandlerWithoutLock()
 	for i, desc := range descs {
 		name := "doc-" + strconv.Itoa(i)
 		err := h.AddDoc(name, strconv.Itoa(i), desc, attr{

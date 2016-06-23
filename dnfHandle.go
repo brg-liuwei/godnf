@@ -4,6 +4,29 @@ import (
 	"sync"
 )
 
+type rwLockWrapper struct {
+	RLock   func()
+	RUnlock func()
+	Lock    func()
+	Unlock  func()
+	rwlock  sync.RWMutex
+}
+
+func newRwLockWrapper(useLock bool) *rwLockWrapper {
+	locker := &rwLockWrapper{}
+	if useLock {
+		locker.RLock = func() { locker.rwlock.RLock() }
+		locker.RUnlock = func() { locker.rwlock.RUnlock() }
+		locker.Lock = func() { locker.rwlock.Lock() }
+		locker.Unlock = func() { locker.rwlock.Unlock() }
+	} else {
+		nop := func() {}
+		locker.RLock, locker.RUnlock = nop, nop
+		locker.Lock, locker.Unlock = nop, nop
+	}
+	return locker
+}
+
 type Handler struct {
 	docs_   *docList
 	conjs_  *conjList
@@ -12,15 +35,23 @@ type Handler struct {
 	termMap map[string]int
 
 	conjRvs     [][]int
-	conjRvsLock sync.RWMutex
+	conjRvsLock *rwLockWrapper
 
 	conjSzRvs     [][]termRvs
-	conjSzRvsLock sync.RWMutex
+	conjSzRvsLock *rwLockWrapper
 }
 
 var currentHandler *Handler = nil
 
 func NewHandler() *Handler {
+	return newHandler(true)
+}
+
+func NewHandlerWithoutLock() *Handler {
+	return newHandler(false)
+}
+
+func newHandler(useLock bool) *Handler {
 	terms := make([]Term, 0, 16)
 	terms = append(terms, Term{id: 0, key: "", val: ""})
 
@@ -36,8 +67,10 @@ func NewHandler() *Handler {
 		terms_:  &termList{terms: terms},
 		termMap: make(map[string]int),
 
-		conjRvs:   make([][]int, 0),
-		conjSzRvs: conjSzRvs_,
+		conjRvs:       make([][]int, 0),
+		conjRvsLock:   newRwLockWrapper(useLock),
+		conjSzRvs:     conjSzRvs_,
+		conjSzRvsLock: newRwLockWrapper(useLock),
 	}
 	h.docs_.h = h
 	h.conjs_.h = h
