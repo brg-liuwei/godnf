@@ -3,7 +3,6 @@ package godnf
 import (
 	"errors"
 	"sort"
-	"sync"
 )
 
 type DocAttr interface {
@@ -263,28 +262,48 @@ func (this *Term) Equal(term *Term) bool {
 
 /* post lists */
 type docList struct {
-	sync.RWMutex
-	docs []Doc
-	h    *Handler
+	locker *rwLockWrapper
+	docs   []Doc
+	h      *Handler
 }
+
+func (l *docList) RLock()   { l.locker.RLock() }
+func (l *docList) RUnlock() { l.locker.RUnlock() }
+func (l *docList) Lock()    { l.locker.Lock() }
+func (l *docList) Unlock()  { l.locker.Unlock() }
 
 type conjList struct {
-	sync.RWMutex
-	conjs []Conj
-	h     *Handler
+	locker *rwLockWrapper
+	conjs  []Conj
+	h      *Handler
 }
+
+func (l *conjList) RLock()   { l.locker.RLock() }
+func (l *conjList) RUnlock() { l.locker.RUnlock() }
+func (l *conjList) Lock()    { l.locker.Lock() }
+func (l *conjList) Unlock()  { l.locker.Unlock() }
 
 type amtList struct {
-	sync.RWMutex
-	amts []Amt
-	h    *Handler
+	locker *rwLockWrapper
+	amts   []Amt
+	h      *Handler
 }
 
+func (l *amtList) RLock()   { l.locker.RLock() }
+func (l *amtList) RUnlock() { l.locker.RUnlock() }
+func (l *amtList) Lock()    { l.locker.Lock() }
+func (l *amtList) Unlock()  { l.locker.Unlock() }
+
 type termList struct {
-	sync.RWMutex
-	terms []Term
-	h     *Handler
+	locker *rwLockWrapper
+	terms  []Term
+	h      *Handler
 }
+
+func (l *termList) RLock()   { l.locker.RLock() }
+func (l *termList) RUnlock() { l.locker.RUnlock() }
+func (l *termList) Lock()    { l.locker.Lock() }
+func (l *termList) Unlock()  { l.locker.Unlock() }
 
 func (this *docList) Add(doc *Doc, h *Handler) int {
 	this.Lock()
@@ -336,15 +355,22 @@ func (this *amtList) Add(amt *Amt, h *Handler) (amtId int) {
 }
 
 func (this *termList) Add(term *Term, h *Handler) (termId int) {
+	h.termMapLock.RLock()
 	if tid, ok := h.termMap[term.key+"%"+term.val]; ok {
+		h.termMapLock.RUnlock()
 		term.id = tid
 		return term.id
 	}
+	h.termMapLock.RUnlock()
+
 	this.Lock()
-	defer this.Unlock()
 	term.id = len(this.terms)
 	this.terms = append(this.terms, *term)
+	this.Unlock()
+
+	h.termMapLock.Lock()
 	h.termMap[term.key+"%"+term.val] = term.id
+	h.termMapLock.Unlock()
 	return term.id
 }
 

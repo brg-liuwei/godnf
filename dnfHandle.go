@@ -28,11 +28,12 @@ func newRwLockWrapper(useLock bool) *rwLockWrapper {
 }
 
 type Handler struct {
-	docs_   *docList
-	conjs_  *conjList
-	amts_   *amtList
-	terms_  *termList
-	termMap map[string]int
+	docs_       *docList
+	conjs_      *conjList
+	amts_       *amtList
+	terms_      *termList
+	termMap     map[string]int
+	termMapLock *rwLockWrapper
 
 	conjRvs     [][]int
 	conjRvsLock *rwLockWrapper
@@ -61,11 +62,24 @@ func newHandler(useLock bool) *Handler {
 	conjSzRvs_[0] = termrvslist
 
 	h := &Handler{
-		docs_:   &docList{docs: make([]Doc, 0, 16)},
-		conjs_:  &conjList{conjs: make([]Conj, 0, 16)},
-		amts_:   &amtList{amts: make([]Amt, 0, 16)},
-		terms_:  &termList{terms: terms},
-		termMap: make(map[string]int),
+		docs_: &docList{
+			docs:   make([]Doc, 0, 16),
+			locker: newRwLockWrapper(useLock),
+		},
+		conjs_: &conjList{
+			conjs:  make([]Conj, 0, 16),
+			locker: newRwLockWrapper(useLock),
+		},
+		amts_: &amtList{
+			amts:   make([]Amt, 0, 16),
+			locker: newRwLockWrapper(useLock),
+		},
+		terms_: &termList{
+			terms:  terms,
+			locker: newRwLockWrapper(useLock),
+		},
+		termMap:     make(map[string]int),
+		termMapLock: newRwLockWrapper(useLock),
 
 		conjRvs:       make([][]int, 0),
 		conjRvsLock:   newRwLockWrapper(useLock),

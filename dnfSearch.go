@@ -31,11 +31,13 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 		return nil, err
 	}
 	termids := make([]int, 0)
+	h.termMapLock.RLock()
 	for i := 0; i < len(conds); i++ {
 		if id, ok := h.termMap[conds[i].Key+"%"+conds[i].Val]; ok {
 			termids = append(termids, id)
 		}
 	}
+	h.termMapLock.RUnlock()
 	return h.doSearch(termids, attrFilter), nil
 }
 

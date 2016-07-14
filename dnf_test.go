@@ -47,10 +47,16 @@ var conds []dnf.Cond = []dnf.Cond{
 	{"OS", "MacOS"},
 }
 
-func createDnfHandler(descs []string) *dnf.Handler {
+func createDnfHandler(descs []string, useLock bool) *dnf.Handler {
 	dnf.SetDebug(true)
-	h := dnf.NewHandler()
-	// h := dnf.NewHandlerWithoutLock()
+
+	var h *dnf.Handler
+	if useLock {
+		h = dnf.NewHandler()
+	} else {
+		h = dnf.NewHandlerWithoutLock()
+	}
+
 	for i, desc := range descs {
 		name := "doc-" + strconv.Itoa(i)
 		err := h.AddDoc(name, strconv.Itoa(i), desc, attr{
@@ -65,7 +71,7 @@ func createDnfHandler(descs []string) *dnf.Handler {
 }
 
 func ExampleRetrieval() {
-	h := createDnfHandler(dnfDesc)
+	h := createDnfHandler(dnfDesc, true)
 	docs, err := h.Search(conds, DocFilter)
 	if err != nil {
 		panic(err)
@@ -84,7 +90,21 @@ func ExampleRetrieval() {
 }
 
 func BenchmarkRetrieval(b *testing.B) {
-	h := createDnfHandler(dnfDesc)
+	h := createDnfHandler(dnfDesc, true)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := h.Search(conds, DocFilter)
+		if err != nil {
+			b.Error("Search error: ", err)
+		}
+	}
+
+	b.ReportAllocs()
+}
+
+func BenchmarkRetrievalWithoutLock(b *testing.B) {
+	h := createDnfHandler(dnfDesc, false)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -98,7 +118,23 @@ func BenchmarkRetrieval(b *testing.B) {
 }
 
 func BenchmarkParallelRetrieval(b *testing.B) {
-	h := createDnfHandler(dnfDesc)
+	h := createDnfHandler(dnfDesc, true)
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, err := h.Search(conds, DocFilter)
+			if err != nil {
+				b.Error("Search error: ", err)
+			}
+		}
+	})
+
+	b.ReportAllocs()
+}
+
+func BenchmarkParallelRetrievalWithoutLock(b *testing.B) {
+	h := createDnfHandler(dnfDesc, false)
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
@@ -150,7 +186,7 @@ func ExampleRetrievalWithCustmizedDelim() {
 	dnf.SetDelimOfSet('[', ']')
 	dnf.SetSeparatorOfSet('.')
 
-	h := createDnfHandler(dnfDescWithCustmizedDelim)
+	h := createDnfHandler(dnfDescWithCustmizedDelim, true)
 
 	dnf.SetDelimOfSet(lset, rset)
 	dnf.SetDelimOfConj(lconj, rconj)
