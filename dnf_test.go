@@ -83,6 +83,7 @@ func ExampleRetrieval() {
 		}
 		fmt.Println(attr.ToString())
 	}
+
 	// Output:
 	// ( 5 -> doc-5 )
 	// ( 8 -> doc-8 )
