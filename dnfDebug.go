@@ -207,7 +207,26 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	return b
 }
 
-func (h *Handler) DumpById() string {
+func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
+	var s []interface{}
+	for _, doc := range h.docs_.docs {
+		if filter(doc.attr) {
+			s = append(s, map[string]interface{}{
+				"docid": doc.docid,
+				"name":  doc.name,
+				"dnf":   doc.dnf,
+				"attr":  doc.attr.ToMap(),
+			})
+		}
+	}
+	b, _ := json.Marshal(map[string]interface{}{
+		"total_records": len(s),
+		"data":          s,
+	})
+	return b
+}
+
+func (h *Handler) DumpById() []byte {
 	var s []interface{}
 	for _, doc := range h.docs_.docs {
 		s = append(s, map[string]interface{}{
@@ -218,10 +237,10 @@ func (h *Handler) DumpById() string {
 		})
 	}
 	b, _ := json.Marshal(s)
-	return string(b)
+	return b
 }
 
-func (h *Handler) DumpByDocId() string {
+func (h *Handler) DumpByDocId() []byte {
 	m := make(map[string]interface{})
 	for _, doc := range h.docs_.docs {
 		m[doc.docid] = map[string]interface{}{
@@ -232,10 +251,10 @@ func (h *Handler) DumpByDocId() string {
 		}
 	}
 	b, _ := json.Marshal(m)
-	return string(b)
+	return b
 }
 
-func (h *Handler) DumpByName() string {
+func (h *Handler) DumpByName() []byte {
 	m := make(map[string]interface{})
 	for _, doc := range h.docs_.docs {
 		m[doc.name] = map[string]interface{}{
@@ -246,7 +265,7 @@ func (h *Handler) DumpByName() string {
 		}
 	}
 	b, _ := json.Marshal(m)
-	return string(b)
+	return b
 }
 
 func (this *conjList) display() {
