@@ -28,17 +28,17 @@ func (this attr) ToMap() map[string]interface{} {
 func DocFilter(attr dnf.DocAttr) bool { return true }
 
 var dnfDesc []string = []string{
-	"(region in {SH, BJ } and age not in {3,4} )",
-	"(region in { HZ , SZ } and sex in { male })",
-	"(region not in {WH, BJ} and age in {4, 5})",
-	"(region in {CD, BJ} and age in {3} and sex in { female })",
-	"(region in {GZ, SH} and age in {4})",
-	"(region in {BJ} and age in {3, 4 ,5})",
-	"(region not in {CD} and age not in {3})",
-	"(sex in {male} and age not in {2, 3, 4})",
-	"(region in {SH, BJ, CD, GZ} and age in {2, 3})",
-	"(region not in {SH, BJ} and age not in {4})",
-	"(OS in {Windows, MacOS} and region not in {SH})",
+	"(region in {SH, BJ } and age not in {3,4} )",                  // docid: 0
+	"(region in { HZ , SZ } and gender in { male })",               // docid: 1
+	"(region not in {WH, BJ} and age in {4, 5})",                   // docid: 2
+	"(region in {CD, BJ} and age in {3} and gender in { female })", // docid: 3
+	"(region in {GZ, SH} and age in {4})",                          // docid: 4
+	"(region in {BJ} and age in {3, 4 ,5})",                        // docid: 5
+	"(region not in {CD} and age not in {3})",                      // docid: 6
+	"(gender in {male} and age not in {2, 3, 4})",                  // docid: 7
+	"(region in {SH, BJ, CD, GZ} and age in {2, 3})",               // docid: 8
+	"(region not in {SH, BJ} and age not in {4})",                  // docid: 9
+	"(OS in {Windows, MacOS} and region not in {SH})",              // docid: 10
 }
 
 var conds []dnf.Cond = []dnf.Cond{
@@ -71,23 +71,46 @@ func createDnfHandler(descs []string, useLock bool) *dnf.Handler {
 }
 
 func ExampleRetrieval() {
-	h := createDnfHandler(dnfDesc, true)
-	docs, err := h.Search(conds, DocFilter)
-	if err != nil {
-		panic(err)
-	}
-	for _, doc := range docs {
-		attr, err := h.DocId2Attr(doc)
+	retrievalHelper := func(h *dnf.Handler) {
+		docs, err := h.Search(conds, DocFilter)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(attr.ToString())
+		for _, doc := range docs {
+			attr, err := h.DocId2Attr(doc)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(attr.ToString())
+		}
 	}
 
+	h := createDnfHandler(dnfDesc, true)
+
+	fmt.Println("before delete:")
+	// expected result: 5, 8, 10
+	retrievalHelper(h)
+
+	h.DeleteDoc("5")
+	fmt.Println("after delete [5]:")
+	// expected result: 8, 10
+	retrievalHelper(h)
+
+	h.DeleteDoc("10")
+	// expected result: 8
+	fmt.Println("after delete [10]:")
+	retrievalHelper(h)
+
 	// Output:
+	// before delete:
 	// ( 5 -> doc-5 )
 	// ( 8 -> doc-8 )
 	// ( 10 -> doc-10 )
+	// after delete [5]:
+	// ( 8 -> doc-8 )
+	// ( 10 -> doc-10 )
+	// after delete [10]:
+	// ( 8 -> doc-8 )
 }
 
 func BenchmarkRetrieval(b *testing.B) {
@@ -165,13 +188,13 @@ test delim:
 */
 var dnfDescWithCustmizedDelim []string = []string{
 	"< region in [SH. BJ ]   and age not in [3] >",
-	"< region in [ HZ. SZ ] and sex in [ male ] >",
+	"< region in [ HZ. SZ ] and gender in [ male ] >",
 	"< region not in [ WH. BJ ] and age in [ 4. 5 ] >",
-	"< region in [ CD. BJ ] and age in [ 3 ] and sex in [ female ] >",
+	"< region in [ CD. BJ ] and age in [ 3 ] and gender in [ female ] >",
 	"< region in [ GZ. SH ] and age in [ 4 ] >",
 	"< region in [ BJ ] and age in [ 3. 4 .5 ] >",
 	"< region not in [ CD ] and age not in [ 3 ] >",
-	"< sex in [ male ] and age not in [ 2. 3. 4 ] >",
+	"< gender in [ male ] and age not in [ 2. 3. 4 ] >",
 	"< region in [ SH. BJ. CD. GZ ] and age in [ 2. 3 ] >",
 	"< region not in [ SH. BJ ] and age not in [ 4 ] >",
 	"< OS in [ Windows. MacOS ] and region not in [ SH ] >",

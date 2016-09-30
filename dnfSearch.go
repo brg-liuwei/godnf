@@ -67,7 +67,7 @@ func (h *Handler) getDocs(conjs []int, attrFilter func(DocAttr) bool) (docs []in
 		}
 		for _, doc := range doclist {
 			h.docs_.RLock()
-			ok := attrFilter(h.docs_.docs[doc].attr)
+			ok := h.docs_.docs[doc].active && attrFilter(h.docs_.docs[doc].attr)
 			h.docs_.RUnlock()
 			if !ok {
 				continue

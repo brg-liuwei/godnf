@@ -10,6 +10,20 @@ type DocAttr interface {
 	ToMap() map[string]interface{}
 }
 
+func (h *Handler) DeleteDoc(docid string) bool {
+	h.docs_.Lock()
+	defer h.docs_.Unlock()
+	for i := 0; i != len(h.docs_.docs); i++ {
+		pdoc := &h.docs_.docs[i]
+		if pdoc.docid == docid {
+			rc := pdoc.active
+			pdoc.active = false
+			return rc
+		}
+	}
+	return false
+}
+
 /* add new doc and insert infos into reverse lists */
 func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr) error {
 	f := func() error {
@@ -17,7 +31,7 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 		defer h.docs_.RUnlock()
 		for _, doc := range h.docs_.docs {
 			if doc.docid == docid {
-				return errors.New("doc " + docid + "has been added before")
+				return errors.New("doc " + docid + " has been added before")
 			}
 		}
 		return nil
@@ -36,11 +50,12 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 
 func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) {
 	doc := &Doc{
-		docid: docid,
-		name:  name,
-		dnf:   dnf,
-		conjs: make([]int, 0),
-		attr:  attr,
+		docid:  docid,
+		name:   name,
+		dnf:    dnf,
+		conjs:  make([]int, 0),
+		attr:   attr,
+		active: true,
 	}
 
 	var conjId int
@@ -153,6 +168,7 @@ type Doc struct {
 	conjSorted bool    /* is conjs slice sorted? */
 	conjs      []int   /* conjunction ids */
 	attr       DocAttr /* ad attr */
+	active     bool    /* for lazy delete */
 }
 
 func (doc *Doc) GetName() string {
