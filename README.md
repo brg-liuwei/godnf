@@ -1,5 +1,7 @@
 # Godnf: 
 
+[![Build Status](https://travis-ci.org/brg-liuwei/godnf.svg?branch=master)](https://travis-ci.org/brg-liuwei/godnf)
+
 ___Implementing boolean expression indexing algorithm (which is very useful in computational advertising area) by golang___
 
 ___For details, see this paper: [Indexing Boolean Expressions](http://theory.stanford.edu/~sergei/papers/vldb09-indexing.pdf)___

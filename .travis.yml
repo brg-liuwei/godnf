@@ -1,0 +1,14 @@
+os: linux
+
+language: go
+
+go:
+  - 1.6
+  - 1.7
+
+install:
+  - go get -u github.com/brg-liuwei/godnf
+
+script:
+  - make test
+  - make bench
