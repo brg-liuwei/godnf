@@ -185,13 +185,13 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	}
 
 	end := start + pageSize
-	if end >= totalRcd {
-		end = totalRcd - 1
+	if end > totalRcd {
+		end = totalRcd
 	}
 
 	// DumpByPage(0, 0) means dump all
 	if pageSize == 0 {
-		end = totalRcd - 1
+		end = totalRcd
 	}
 
 	s := make([]interface{}, 0, len(h.docs_.docs[start:end]))
