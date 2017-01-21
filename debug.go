@@ -168,7 +168,9 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	defer h.docs_.RLock()
 
 	totalRcd := len(h.docs_.docs)
-	if totalRcd == 0 {
+	start := (pageNum - 1) * pageSize
+
+	if totalRcd == 0 || start >= totalRcd {
 		b, _ := json.Marshal(map[string]interface{}{
 			"total_records": 0,
 			"data":          []interface{}{},
@@ -176,10 +178,6 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 		return b
 	}
 
-	start := (pageNum - 1) * pageSize
-	if start >= totalRcd {
-		start = totalRcd - 1
-	}
 	if start < 0 {
 		start = 0
 	}
