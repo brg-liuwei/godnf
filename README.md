@@ -1,6 +1,6 @@
-# Godnf: 
+[![Build Status](https://travis-ci.org/brg-liuwei/godnf.svg?branch=master)](https://travis-ci.org/brg-liuwei/godnf) [![codecov](https://codecov.io/gh/brg-liuwei/godnf/branch/master/graph/badge.svg)](https://codecov.io/gh/brg-liuwei/godnf)
 
-[![Build Status](https://travis-ci.org/brg-liuwei/godnf.svg?branch=master)](https://travis-ci.org/brg-liuwei/godnf)
+# Godnf: 
 
 ___Implementing boolean expression indexing algorithm (which is very useful in computational advertising area) by golang___
 

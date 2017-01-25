@@ -6,9 +6,9 @@ go:
   - 1.6
   - 1.7
 
-install:
-  - go get -u github.com/brg-liuwei/godnf
-
 script:
   - make test
   - make bench
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

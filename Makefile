@@ -12,11 +12,10 @@ help:
 	@echo "Usage: use \`make bench\` to run example and benchmark"
 
 test:
-	go test github.com/brg-liuwei/godnf
-	go test github.com/brg-liuwei/godnf/set -test.v
+	go test -v -coverprofile=coverage.txt -covermode=atomic
 
 bench:
-	go test github.com/brg-liuwei/godnf -bench="." -cpu=${NCPU}
+	go test -bench="." -cpu=${NCPU}
 
 clean:
 	rm -rf ${VARS}
