@@ -7,8 +7,7 @@ go:
   - 1.7
 
 script:
-  - make test
-  - make bench
+  - make cov
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
