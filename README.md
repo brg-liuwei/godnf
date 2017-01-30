@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/brg-liuwei/godnf.svg?branch=master)](https://travis-ci.org/brg-liuwei/godnf) [![codecov](https://codecov.io/gh/brg-liuwei/godnf/branch/master/graph/badge.svg)](https://codecov.io/gh/brg-liuwei/godnf)
+[![Build Status](https://travis-ci.org/brg-liuwei/godnf.svg?branch=master)](https://travis-ci.org/brg-liuwei/godnf) [![codecov](https://codecov.io/gh/brg-liuwei/godnf/branch/master/graph/badge.svg)](https://codecov.io/gh/brg-liuwei/godnf) [![Go Doc](https://godoc.org/github.com/brg-liuwei/godnf?status.svg)](https://godoc.org/github.com/brg-liuwei/godnf)
 
 # Godnf: 
 

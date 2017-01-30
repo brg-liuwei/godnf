@@ -2,6 +2,7 @@ package godnf
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/brg-liuwei/godnf/set"
@@ -10,6 +11,10 @@ import (
 type Cond struct {
 	Key string
 	Val string
+}
+
+func (c *Cond) ToString() string {
+	return fmt.Sprintf("(%s: %s)", c.Key, c.Val)
 }
 
 func searchCondCheck(conds []Cond) error {
