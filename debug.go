@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var debug bool
@@ -365,4 +366,12 @@ func (h *Handler) DisplayConjRevs2() {
 			DEBUG("   ", s)
 		}
 	}
+}
+
+func ConditionsToString(conds []Cond) string {
+	ss := make([]string, 0, len(conds))
+	for i := 0; i != len(conds); i++ {
+		ss = append(ss, conds[i].ToString())
+	}
+	return "{ " + strings.Join(ss, ", ") + " }"
 }
