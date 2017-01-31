@@ -17,12 +17,16 @@ cov:
 	go test -v -coverprofile=profile.out -covermode=atomic
 	cat profile.out >> coverage.txt
 	rm profile.out
+	go test github.com/brg-liuwei/godnf/set -v -coverprofile=profile.out -covermode=atomic
+	cat profile.out >> coverage.txt
+	rm profile.out
 	go test -bench="." -cpu=${NCPU} -coverprofile=profile.out -covermode=atomic
 	cat profile.out >> coverage.txt
 	rm profile.out
 
 test:
-	go test -v
+	go test -v 2> /dev/null
+	pushd set > /dev/null && go test -v && popd > /dev/null
 
 bench:
 	go test -bench="." -cpu=${NCPU}

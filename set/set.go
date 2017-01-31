@@ -8,17 +8,17 @@ import (
 type CountSet struct {
 	sync.RWMutex
 	count    int
-	positive map[int]int
-	negetive map[int]int
-	result   map[int]bool
+	positive *IntDArray // use IntDArray instead of golang native map for better performance
+	negetive *IntDArray
+	result   *IntDArray
 }
 
 func NewCountSet(count int) *CountSet {
 	return &CountSet{
 		count:    count,
-		positive: make(map[int]int),
-		negetive: make(map[int]int),
-		result:   make(map[int]bool),
+		positive: NewIntDArray(),
+		negetive: NewIntDArray(),
+		result:   NewIntDArray(),
 	}
 }
 
@@ -29,14 +29,13 @@ func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	}
 
 	if !post {
-		set.negetive[id] = 1
+		set.negetive.Set(id, 1)
 	} else {
-		val := set.positive[id]
-		val++
-		if val >= set.count {
-			set.result[id] = true
+		val := set.positive.Get(id)
+		if val+1 >= set.count {
+			set.result.Set(id, 1)
 		} else {
-			set.positive[id] = val
+			set.positive.Add(id, 1)
 		}
 	}
 }
@@ -50,23 +49,29 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 		lock, unlock, rlock, runlock = nop, nop, nop, nop
 	}
 	lock()
-	for k, _ := range set.negetive {
-		if _, ok := set.result[k]; ok {
-			delete(set.result, k)
+	for pos, val := range set.negetive.array {
+		if val > 0 {
+			set.result.Set(pos, 0)
 		}
+	}
+	for pos, _ := range set.negetive.m {
+		delete(set.result.m, pos)
 	}
 	unlock()
 
 	rlock()
-	rc := make([]int, 0, len(set.result))
-	for k, _ := range set.result {
-		rc = append(rc, k)
+	rc := make([]int, 0, 8)
+	for pos, val := range set.result.array {
+		if val > 0 {
+			rc = append(rc, pos)
+		}
+	}
+	for pos, _ := range set.result.m {
+		rc = append(rc, pos)
 	}
 	runlock()
 
-	if !sort.IntsAreSorted(rc) {
-		sort.IntSlice(rc).Sort()
-	}
+	// rc is a sorted array, absolutely
 	return rc
 }
 
