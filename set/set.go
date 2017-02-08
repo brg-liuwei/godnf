@@ -5,23 +5,31 @@ import (
 	"sync"
 )
 
+/*
+   count set:
+
+       if an elem with enough positive count(>= set.count) and with no negetive count,
+       we define this elem is in the set
+*/
 type CountSet struct {
 	sync.RWMutex
 	count    int
-	positive *IntDArray // use IntDArray instead of golang native map for better performance
-	negetive *IntDArray
-	result   *IntDArray
+	positive *intDArray // use intDArray instead of golang native map for better performance
+	negetive *intDArray
+	result   *intDArray
 }
 
+/* create a count set */
 func NewCountSet(count int) *CountSet {
 	return &CountSet{
 		count:    count,
-		positive: NewIntDArray(),
-		negetive: NewIntDArray(),
-		result:   NewIntDArray(),
+		positive: newIntDArray(),
+		negetive: newIntDArray(),
+		result:   newIntDArray(),
 	}
 }
 
+/* add an elem into set */
 func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -40,6 +48,7 @@ func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	}
 }
 
+/* return a int slice contains all elems(with enough count) of set in order */
 func (set *CountSet) ToSlice(useMutex bool) []int {
 	var lock, unlock, rlock, runlock func()
 	if useMutex {
@@ -54,7 +63,7 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 			set.result.Set(pos, 0)
 		}
 	}
-	for pos, _ := range set.negetive.m {
+	for pos := range set.negetive.m {
 		delete(set.result.m, pos)
 	}
 	unlock()
@@ -66,7 +75,7 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 			rc = append(rc, pos)
 		}
 	}
-	for pos, _ := range set.result.m {
+	for pos := range set.result.m {
 		rc = append(rc, pos)
 	}
 	runlock()
@@ -75,15 +84,18 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 	return rc
 }
 
+/* IntSet: a set whose elems are integer */
 type IntSet struct {
 	sync.RWMutex
 	data map[int]bool
 }
 
+/* create an int set */
 func NewIntSet() *IntSet {
 	return &IntSet{data: make(map[int]bool)}
 }
 
+/* add an elem into set */
 func (set *IntSet) Add(elem int, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -92,6 +104,7 @@ func (set *IntSet) Add(elem int, useMutex bool) {
 	set.data[elem] = true
 }
 
+/* add elems into set */
 func (set *IntSet) AddSlice(elems []int, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -102,6 +115,7 @@ func (set *IntSet) AddSlice(elems []int, useMutex bool) {
 	}
 }
 
+/* return a int slice contains all elems of set in order */
 func (set *IntSet) ToSlice(useMutex bool) []int {
 	var rlock, runlock func()
 	if useMutex {
@@ -112,7 +126,7 @@ func (set *IntSet) ToSlice(useMutex bool) []int {
 
 	rlock()
 	rc := make([]int, 0, len(set.data))
-	for k, _ := range set.data {
+	for k := range set.data {
 		rc = append(rc, k)
 	}
 	runlock()

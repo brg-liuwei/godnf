@@ -42,9 +42,9 @@ var dnfDesc []string = []string{
 }
 
 var conds []dnf.Cond = []dnf.Cond{
-	{"region", "BJ"},
-	{"age", "3"},
-	{"OS", "MacOS"},
+	{Key: "region", Val: "BJ"},
+	{Key: "age", Val: "3"},
+	{Key: "OS", Val: "MacOS"},
 }
 
 func createDnfHandler(descs []string, useLock bool) *dnf.Handler {
@@ -186,7 +186,7 @@ test delim:
     SetDelimOfConj(lconj, rconj)
     SetDelimOfConj(lset, rset)
 */
-var dnfDescWithCustmizedDelim []string = []string{
+var dnfDescWithCustomizedDelim []string = []string{
 	"< region in [SH. BJ ]   and age not in [3] >",
 	"< region in [ HZ. SZ ] and gender in [ male ] >",
 	"< region not in [ WH. BJ ] and age in [ 4. 5 ] >",
@@ -201,7 +201,7 @@ var dnfDescWithCustmizedDelim []string = []string{
 	"< size in [300*250] and adx in [1,2,3] and region in [1156110000,1156120000,1156130000,1156140000,1156150000,1156210000,1156220000,1156230000,1156310000,1156330000,1156340000,1156350000,1156360000,1156370000]>",
 }
 
-func ExampleRetrievalWithCustmizedDelim() {
+func ExampleRetrievalWithCustomizedDelim() {
 	lconj, rconj := dnf.GetDelimOfConj()
 	lset, rset := dnf.GetDelimOfSet()
 	sep := dnf.GetSeparatorOfSet()
@@ -210,7 +210,7 @@ func ExampleRetrievalWithCustmizedDelim() {
 	dnf.SetDelimOfSet('[', ']')
 	dnf.SetSeparatorOfSet('.')
 
-	h := createDnfHandler(dnfDescWithCustmizedDelim, true)
+	h := createDnfHandler(dnfDescWithCustomizedDelim, true)
 
 	dnf.SetDelimOfSet(lset, rset)
 	dnf.SetDelimOfConj(lconj, rconj)
