@@ -8,36 +8,33 @@ import (
 	"github.com/brg-liuwei/godnf/set"
 )
 
-/*
-   Cond: retrieval condition
-
-   A dnf like ({Country in {CN, RU, US}) can be retrievaled by Cond as follows:
-
-   Cond{
-       Key: "Country",
-       Val: "CN",
-   }
-
-   or
-
-   Cond{
-       Key: "Country",
-       Val: "RU",
-   }
-
-   or
-
-   Cond{
-       Key: "Country",
-       Val: "US",
-   }
-*/
+// Cond: retrieval condition
+//
+// A dnf like ({Country in {CN, RU, US}) can be retrievaled by Cond as follows:
+//
+// Cond{
+//     Key: "Country",
+//     Val: "CN",
+// }
+//
+// or
+//
+// Cond{
+//     Key: "Country",
+//     Val: "RU",
+// }
+//
+// or
+//
+// Cond{
+//     Key: "Country",
+//     Val: "US",
+// }
 type Cond struct {
 	Key string
 	Val string
 }
 
-/* convert Cond to string for debug */
 func (c *Cond) ToString() string {
 	return fmt.Sprintf("(%s: %s)", c.Key, c.Val)
 }
@@ -56,7 +53,7 @@ func searchCondCheck(conds []Cond) error {
 	return nil
 }
 
-/* search docs which match conds and passed by attrFilter */
+// Search docs which match conds and passed by attrFilter
 func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []int, err error) {
 	if err := searchCondCheck(conds); err != nil {
 		return nil, err
@@ -72,7 +69,7 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 	return h.doSearch(termids, attrFilter), nil
 }
 
-/* search all docs which match conds */
+// SearchAll searches all docs which match conds
 func (h *Handler) SearchAll(conds []Cond) (docs []int, err error) {
 	return h.Search(conds, func(DocAttr) bool { return true })
 }
@@ -98,9 +95,9 @@ func (h *Handler) getDocs(conjs []int, attrFilter func(DocAttr) bool) (docs []in
 			continue
 		}
 		for _, doc := range doclist {
-			h.docs_.RLock()
-			ok := h.docs_.docs[doc].active && attrFilter(h.docs_.docs[doc].attr)
-			h.docs_.RUnlock()
+			h.docs.RLock()
+			ok := h.docs.docs[doc].active && attrFilter(h.docs.docs[doc].attr)
+			h.docs.RUnlock()
 			if !ok {
 				continue
 			}
@@ -143,7 +140,7 @@ func (h *Handler) getConjs(terms []int) (conjs []int) {
 			}
 		}
 
-		/* 处理∅ */
+		// 处理∅
 		if i == 0 {
 			for _, pair := range termlist[0].cList {
 				ASSERT(pair.belong == true)

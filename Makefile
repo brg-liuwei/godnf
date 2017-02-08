@@ -22,8 +22,8 @@ cov:
 	rm profile.out
 
 test:
-	go test -v 2> /dev/null
-	pushd set > /dev/null && go test -v && popd > /dev/null
+	go test
+	pushd set > /dev/null && go test && popd > /dev/null
 
 bench:
 	go test -bench="." -cpu=${NCPU}

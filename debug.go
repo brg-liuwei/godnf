@@ -10,10 +10,10 @@ import (
 
 var debug bool
 
-/* debug function, call SetDebug(true) to enable */
+// DEBUG function, output msg to stdout when called SetDebug(true)
 var DEBUG func(msg ...interface{})
 
-/* assert function, call SetDebug(true) to enable */
+// ASSERT function, enabled by calling SetDebug(true)
 var ASSERT func(expression bool)
 
 func doDEBUG(msg ...interface{}) {
@@ -32,7 +32,7 @@ func doASSERT(expression bool) {
 
 func noASSERT(expression bool) {}
 
-/* enable/disable debug interface */
+// SetDebug: enable/disable debug interface
 func SetDebug(flag bool) {
 	if debug != flag {
 		debug = flag
@@ -55,23 +55,23 @@ func init() {
 	setDebug()
 }
 
-/* Term to string */
+// Term to string
 func (term *Term) ToString() string {
 	if term.id == 0 {
-		/* empty set */
-		return " ∅ "
+		// empty set
+		return "∅"
 	}
 	return fmt.Sprintf("( %s  %s )", term.key, term.val)
 }
 
-/* Amt to string */
+// Amt to string
 func (amt *Amt) ToString(h *Handler) string {
 	if len(amt.terms) == 0 {
 		return ""
 	}
 
-	h.terms_.RLock()
-	defer h.terms_.RUnlock()
+	h.terms.RLock()
+	defer h.terms.RUnlock()
 
 	var key, op string
 
@@ -80,10 +80,10 @@ func (amt *Amt) ToString(h *Handler) string {
 	} else {
 		op = "∉"
 	}
-	key = h.terms_.terms[amt.terms[0]].key
+	key = h.terms.terms[amt.terms[0]].key
 	s := fmt.Sprintf("%s %s { ", key, op)
 	for i, idx := range amt.terms {
-		s += h.terms_.terms[idx].val
+		s += h.terms.terms[idx].val
 		if i+1 < len(amt.terms) {
 			s += ", "
 		}
@@ -91,16 +91,16 @@ func (amt *Amt) ToString(h *Handler) string {
 	return s + " }"
 }
 
-/* Conj to string */
+// Conj to string
 func (conj *Conj) ToString(h *Handler) string {
 	if len(conj.amts) == 0 {
 		return ""
 	}
-	h.amts_.RLock()
-	defer h.amts_.RUnlock()
+	h.amts.RLock()
+	defer h.amts.RUnlock()
 	s := "( "
 	for i, idx := range conj.amts {
-		s += h.amts_.amts[idx].ToString(h)
+		s += h.amts.amts[idx].ToString(h)
 		if i+1 < len(conj.amts) {
 			s += " ∩ "
 		}
@@ -108,15 +108,15 @@ func (conj *Conj) ToString(h *Handler) string {
 	return s + " )"
 }
 
-/* Doc to string */
+// Doc to string
 func (doc *Doc) ToString(h *Handler) (s string) {
 	if len(doc.conjs) == 0 {
 		s = "len(conjs == 0)"
 	}
-	h.conjs_.RLock()
-	defer h.conjs_.RUnlock()
+	h.conjs.RLock()
+	defer h.conjs.RUnlock()
 	for i, idx := range doc.conjs {
-		s += h.conjs_.conjs[idx].ToString(h)
+		s += h.conjs.conjs[idx].ToString(h)
 		if i+1 < len(doc.conjs) {
 			s += " ∪ "
 		}
@@ -149,9 +149,9 @@ func (dl *docList) docId2Attr(docid int) (DocAttr, error) {
 	return doc.attr, nil
 }
 
-/* get DocAttr by docid */
+// DocId2Attr: get DocAttr by docid
 func (h *Handler) DocId2Attr(docid int) (DocAttr, error) {
-	return h.docs_.docId2Attr(docid)
+	return h.docs.docId2Attr(docid)
 }
 
 func (dl *docList) docId2Map(docid int) map[string]interface{} {
@@ -164,22 +164,22 @@ func (dl *docList) docId2Map(docid int) map[string]interface{} {
 	return doc.attr.ToMap()
 }
 
-/* get DocAttr and convert the attr to map by docid */
+// DocId2Map: get DocAttr and convert the attr to map by docid
 func (h *Handler) DocId2Map(docid int) map[string]interface{} {
-	return h.docs_.docId2Map(docid)
+	return h.docs.docId2Map(docid)
 }
 
-/* dump all docs by page_num and page_size for debug */
+// DumpByPage: dump all docs by page_num and page_size for debug
 func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
-	h.docs_.RLock()
-	defer h.docs_.RLock()
+	h.docs.RLock()
+	defer h.docs.RLock()
 
-	totalRcd := len(h.docs_.docs)
+	totalRcd := len(h.docs.docs)
 	start := (pageNum - 1) * pageSize
 
 	if totalRcd == 0 || start >= totalRcd {
 		b, _ := json.Marshal(map[string]interface{}{
-			"total_records": 0,
+			"total_records": totalRcd,
 			"data":          []interface{}{},
 		})
 		return b
@@ -199,8 +199,8 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 		end = totalRcd
 	}
 
-	s := make([]interface{}, 0, len(h.docs_.docs[start:end]))
-	for _, doc := range h.docs_.docs[start:end] {
+	s := make([]interface{}, 0, len(h.docs.docs[start:end]))
+	for _, doc := range h.docs.docs[start:end] {
 		s = append(s, map[string]interface{}{
 			"name":   doc.name,
 			"docid":  doc.docid,
@@ -217,10 +217,10 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	return b
 }
 
-/* dump docs by funnel func for debug */
+// DumpByFilter: dump docs by funnel func for debug
 func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
 	var s []interface{}
-	for _, doc := range h.docs_.docs {
+	for _, doc := range h.docs.docs {
 		if filter(doc.attr) {
 			s = append(s, map[string]interface{}{
 				"name":   doc.name,
@@ -238,10 +238,10 @@ func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
 	return b
 }
 
-/* dump all docs by id for debug */
+// DumpById: dump all docs by id for debug
 func (h *Handler) DumpById() []byte {
 	var s []interface{}
-	for _, doc := range h.docs_.docs {
+	for _, doc := range h.docs.docs {
 		s = append(s, map[string]interface{}{
 			"name":   doc.name,
 			"docid":  doc.docid,
@@ -254,10 +254,10 @@ func (h *Handler) DumpById() []byte {
 	return b
 }
 
-/* dump all docs by docid for debug */
+// DumpByDocId: dump all docs by docid for debug
 func (h *Handler) DumpByDocId() []byte {
 	m := make(map[string]interface{})
-	for _, doc := range h.docs_.docs {
+	for _, doc := range h.docs.docs {
 		m[doc.docid] = map[string]interface{}{
 			"id":     doc.id,
 			"name":   doc.name,
@@ -270,10 +270,10 @@ func (h *Handler) DumpByDocId() []byte {
 	return b
 }
 
-/* dump all docs by name for debug */
+// DumpByName: dump all docs by name for debug
 func (h *Handler) DumpByName() []byte {
 	m := make(map[string]interface{})
-	for _, doc := range h.docs_.docs {
+	for _, doc := range h.docs.docs {
 		m[doc.name] = map[string]interface{}{
 			"id":     doc.id,
 			"docid":  doc.docid,
@@ -286,27 +286,27 @@ func (h *Handler) DumpByName() []byte {
 	return b
 }
 
-func (this *conjList) display() {
-	this.RLock()
-	defer this.RUnlock()
-	for i, conj := range this.conjs {
-		DEBUG("Conj[", i, "]", "size:", conj.size, conj.ToString(this.h))
+func (cl *conjList) display() {
+	cl.RLock()
+	defer cl.RUnlock()
+	for i, conj := range cl.conjs {
+		DEBUG("Conj[", i, "]", "size:", conj.size, ",", conj.ToString(cl.h))
 	}
 }
 
-func (this *amtList) display() {
-	this.RLock()
-	defer this.RUnlock()
-	for i, amt := range this.amts {
-		DEBUG("Amt[", i, "]:", amt.ToString(this.h))
+func (al *amtList) display() {
+	al.RLock()
+	defer al.RUnlock()
+	for i, amt := range al.amts {
+		DEBUG("Amt[", i, "]:", amt.ToString(al.h))
 	}
 }
 
-func (this *termList) display() {
-	this.RLock()
-	defer this.RUnlock()
-	for i, term := range this.terms {
-		DEBUG("Term[", i, "]", term.ToString())
+func (tl *termList) display() {
+	tl.RLock()
+	defer tl.RUnlock()
+	for i, term := range tl.terms {
+		DEBUG("Term[", i, "]:", term.ToString())
 	}
 }
 
@@ -318,31 +318,33 @@ func display(obj displayer) {
 	obj.display()
 }
 
-/* display doc list for debug */
+// display doc list for debug
 func (h *Handler) DisplayDocs() {
-	display(h.docs_)
+	display(h.docs)
 }
 
-/* display conj list for debug */
+// display conj list for debug
 func (h *Handler) DisplayConjs() {
-	display(h.conjs_)
+	display(h.conjs)
 }
 
-/* display amt list for debug */
+// display amt list for debug
 func (h *Handler) DisplayAmts() {
-	display(h.amts_)
+	display(h.amts)
 }
 
-/* display terms list for debug */
+// display terms list for debug
 func (h *Handler) DisplayTerms() {
-	display(h.terms_)
+	display(h.terms)
 }
 
-/* display conj inverse list1 for debug */
+// DisplayConjRevs: display conj inverse list1 for debug
 func (h *Handler) DisplayConjRevs() {
 	DEBUG("reverse list 1:")
+
 	h.conjRvsLock.RLock()
 	defer h.conjRvsLock.RUnlock()
+
 	for i, docs := range h.conjRvs {
 		s := fmt.Sprint("conj[", i, "]: ->")
 		for _, id := range docs {
@@ -352,15 +354,15 @@ func (h *Handler) DisplayConjRevs() {
 	}
 }
 
-/* display conj inverse list2 for debug */
+// DisplayConjRevs2: display conj inverse list2 for debug
 func (h *Handler) DisplayConjRevs2() {
 	DEBUG("reverse list 2:")
 
 	h.conjSzRvsLock.RLock()
 	defer h.conjSzRvsLock.RUnlock()
 
-	h.terms_.RLock()
-	defer h.terms_.RUnlock()
+	h.terms.RLock()
+	defer h.terms.RUnlock()
 
 	for i := 0; i < len(h.conjSzRvs); i++ {
 		termlist := h.conjSzRvs[i]
@@ -369,7 +371,7 @@ func (h *Handler) DisplayConjRevs2() {
 		}
 		DEBUG("***** size:", i, "*****")
 		for _, termrvs := range termlist {
-			s := fmt.Sprint(h.terms_.terms[termrvs.termId].ToString(), " ->")
+			s := fmt.Sprint(h.terms.terms[termrvs.termId].ToString(), " ->")
 			for _, cpair := range termrvs.cList {
 				var op string
 				if cpair.belong {
@@ -384,7 +386,7 @@ func (h *Handler) DisplayConjRevs2() {
 	}
 }
 
-/* convert Cond slice to string for debug */
+// ConditionsToString: convert Cond slice to string for debug
 func ConditionsToString(conds []Cond) string {
 	ss := make([]string, 0, len(conds))
 	for i := 0; i != len(conds); i++ {

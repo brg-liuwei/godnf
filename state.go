@@ -8,51 +8,42 @@ var leftDelimOfConj, rightDelimOfConj byte = byte('('), byte(')')
 var leftDelimOfSet, rightDelimOfSet byte = byte('{'), byte('}')
 var separatorOfSet byte = byte(',')
 
-/* set delim of conjunction */
+// SetDelimOfConj set global conj delim to left and right
 func SetDelimOfConj(left, right rune) {
 	leftDelimOfConj, rightDelimOfConj = byte(left), byte(right)
 }
 
-/*
-   get delim of conjunction
-
-   eg: if a dnf is like (Country in {CN, RU, US}),
-   this func will return rune('('), rune(')')
-*/
+//  GetDelimOfConj returns current global left and right delim of conjunction
+//  eg: if a right dnf is like (Country in {CN, RU, US}),
+//  this func will return rune('('), rune(')')
 func GetDelimOfConj() (left, right rune) {
 	return rune(leftDelimOfConj), rune(rightDelimOfConj)
 }
 
-/* set delim of set */
+// SetDelimOfSet set global set delim to left and right
 func SetDelimOfSet(left, right rune) {
 	leftDelimOfSet, rightDelimOfSet = byte(left), byte(right)
 }
 
-/*
-   get delim of set
-
-   eg: if a dnf is like (Country in {CN, RU, US}),
-   this func will return rune('{'), rune('}')
-*/
+// GetDelimOfSet returns current global left and right delim of set
+// eg: if a dnf is like (Country in {CN, RU, US}),
+// this func will return rune('{'), rune('}')
 func GetDelimOfSet() (left, right rune) {
 	return rune(leftDelimOfSet), rune(rightDelimOfSet)
 }
 
-/* set separator of set */
+// SetSeparatorOfSet set global separator of set
 func SetSeparatorOfSet(sep rune) {
 	separatorOfSet = byte(sep)
 }
 
-/*
-   get separator of set
-   eg, the separator of set of a dnf like (Country in {CN, RU, US}) is rune(',')
-*/
+// GetSeparatorOfSet returns current global separator of elems in set
+// eg: the separator of set elems is rune(',') when a dnf is like (Country in {CN, RU, US})
 func GetSeparatorOfSet() rune {
 	return rune(separatorOfSet)
 }
 
-/* dnf format error */
-var DnfFmtError error = errors.New("dnf format error")
+var dnfFmtError error = errors.New("dnf format error")
 
 func skipSpace(s *string, i int) int {
 	for i < len(*s) {
@@ -97,34 +88,34 @@ func dnfIdxCheck(dnf *string, i int, errmsg string) bool {
 	return true
 }
 
-/* check dnf syntax */
+// DnfCheck check dnf syntax
 func DnfCheck(dnf string) error {
 	return dnfStart(&dnf, skipSpace(&dnf, 0))
 }
 
-/* start: get leftDelimOfConj, default is '(' */
+// start: get leftDelimOfConj, default is '('
 func dnfStart(dnf *string, i int) error {
 	if !dnfIdxCheck(dnf, i, "start dnf idx error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if (*dnf)[i] != leftDelimOfConj {
 		DEBUG("dnf start error, dnf[", i, "] =", string((*dnf)[i]))
-		return DnfFmtError
+		return dnfFmtError
 	}
 
 	m := make(map[string]bool)
 	return dnfState1(dnf, skipSpace(dnf, i+1), m)
 }
 
-/* state1: get key */
+// state1: get key
 func dnfState1(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState1 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	j := skipString(dnf, i)
 	if j >= len(*dnf) {
 		DEBUG("state 1 internal error")
-		return DnfFmtError
+		return dnfFmtError
 	}
 	key := string((*dnf)[i:j])
 	if _, ok := m[key]; ok {
@@ -134,10 +125,10 @@ func dnfState1(dnf *string, i int, m map[string]bool) error {
 	return dnfState2(dnf, skipSpace(dnf, j+1), m)
 }
 
-/* state2: get 'not' or get 'in' */
+// state2: get 'not' or get 'in'
 func dnfState2(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState2 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if i+3 <= len(*dnf) && string((*dnf)[i:i+3]) == "not" {
 		return dnfState3(dnf, skipSpace(dnf, i+3), m)
@@ -146,43 +137,43 @@ func dnfState2(dnf *string, i int, m map[string]bool) error {
 		return dnfState4(dnf, skipSpace(dnf, i+2), m)
 	}
 	DEBUG("state2 internal error")
-	return DnfFmtError
+	return dnfFmtError
 }
 
-/* state3: get 'in' */
+// state3: get 'in'
 func dnfState3(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState3 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if i+2 <= len(*dnf) && string((*dnf)[i:i+2]) == "in" {
 		return dnfState4(dnf, skipSpace(dnf, i+2), m)
 	}
 	DEBUG("state3 internal error")
-	return DnfFmtError
+	return dnfFmtError
 }
 
-/* state4: get leftDelimOfSet, default is '{' */
+// state4: get leftDelimOfSet, default is '{'
 func dnfState4(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState4 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if (*dnf)[i] != leftDelimOfSet {
 		DEBUG("state4 internal error")
-		return DnfFmtError
+		return dnfFmtError
 	}
 	return dnfState5(dnf, skipSpace(dnf, i+1), m)
 }
 
-/* state5: get elem of set */
+// state5: get elem of set
 func dnfState5(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState5 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 
 	j := skipString(dnf, i)
 	if j >= len(*dnf) {
 		DEBUG("state5 internal error")
-		return DnfFmtError
+		return dnfFmtError
 	}
 
 	// val := string((*dnf)[i:j])
@@ -191,10 +182,10 @@ func dnfState5(dnf *string, i int, m map[string]bool) error {
 	return dnfState6(dnf, skipSpace(dnf, j), m)
 }
 
-/* state6: get next val(',') or get end of set('}')*/
+// state6: get next val(',') or get end of set('}')
 func dnfState6(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState6 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if (*dnf)[i] == separatorOfSet {
 		return dnfState7(dnf, skipSpace(dnf, i+1), m)
@@ -203,19 +194,19 @@ func dnfState6(dnf *string, i int, m map[string]bool) error {
 		return dnfState8(dnf, skipSpace(dnf, i+1), m)
 	}
 	DEBUG("state6 internal error")
-	return DnfFmtError
+	return dnfFmtError
 }
 
-/* state7: get next val */
+// state7: get next val
 func dnfState7(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState7 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 
 	j := skipString(dnf, i)
 	if j >= len(*dnf) {
 		DEBUG("state7 internal error")
-		return DnfFmtError
+		return dnfFmtError
 	}
 
 	// val := string((*dnf)[i:j])
@@ -224,10 +215,10 @@ func dnfState7(dnf *string, i int, m map[string]bool) error {
 	return dnfState6(dnf, skipSpace(dnf, j), m)
 }
 
-/* state8: get 'and' or end of this conj(')') */
+// state8: get 'and' or end of this conj(')')
 func dnfState8(dnf *string, i int, m map[string]bool) error {
 	if !dnfIdxCheck(dnf, i, "dnfState8 check error") {
-		return DnfFmtError
+		return dnfFmtError
 	}
 	if i+3 < len(*dnf) && string((*dnf)[i:i+3]) == "and" {
 		return dnfState1(dnf, skipSpace(dnf, i+3), m)
@@ -236,18 +227,18 @@ func dnfState8(dnf *string, i int, m map[string]bool) error {
 		return dnfState9(dnf, skipSpace(dnf, i+1), m)
 	}
 	DEBUG("state8 internal error")
-	return DnfFmtError
+	return dnfFmtError
 }
 
-/* state9: end of dnf or next conj(get "or") */
+// state9: end of dnf or next conj(get "or")
 func dnfState9(dnf *string, i int, m map[string]bool) error {
 	if i == len(*dnf) {
-		/* accept */
+		// accept
 		return nil
 	}
 	if i+2 < len(*dnf) && string((*dnf)[i:i+2]) == "or" {
 		return dnfStart(dnf, skipSpace(dnf, i+2))
 	}
 	DEBUG("state9 internal error")
-	return DnfFmtError
+	return dnfFmtError
 }

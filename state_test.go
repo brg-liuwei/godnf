@@ -13,7 +13,7 @@ func setDelim() {
 }
 
 func TestDnfCheck(t *testing.T) {
-	dnf.SetDebug(true)
+	dnf.SetDebug(false)
 	setDelim()
 	checkDnf := func(dnfStr string, noErr bool) {
 		err := dnf.DnfCheck(dnfStr)

@@ -5,12 +5,9 @@ import (
 	"sync"
 )
 
-/*
-   count set:
-
-       if an elem with enough positive count(>= set.count) and with no negetive count,
-       we define this elem is in the set
-*/
+// CountSet:
+// if an elem with enough positive count(>= set.count) and with no negetive count,
+// we define this elem is in the set
 type CountSet struct {
 	sync.RWMutex
 	count    int
@@ -19,7 +16,7 @@ type CountSet struct {
 	result   *intDArray
 }
 
-/* create a count set */
+// NewCountSet creates a count set with positive `count`
 func NewCountSet(count int) *CountSet {
 	return &CountSet{
 		count:    count,
@@ -29,7 +26,7 @@ func NewCountSet(count int) *CountSet {
 	}
 }
 
-/* add an elem into set */
+// Add an elem into set
 func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -48,7 +45,7 @@ func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	}
 }
 
-/* return a int slice contains all elems(with enough count) of set in order */
+// ToSlice returns a CountSet slice contains all elems(with enough count) of set in order
 func (set *CountSet) ToSlice(useMutex bool) []int {
 	var lock, unlock, rlock, runlock func()
 	if useMutex {
@@ -84,18 +81,18 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 	return rc
 }
 
-/* IntSet: a set whose elems are integer */
+// IntSet: a set whose elems are integer
 type IntSet struct {
 	sync.RWMutex
 	data map[int]bool
 }
 
-/* create an int set */
+// NewIntSet creates an int set
 func NewIntSet() *IntSet {
 	return &IntSet{data: make(map[int]bool)}
 }
 
-/* add an elem into set */
+// Add an elem into set
 func (set *IntSet) Add(elem int, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -104,7 +101,7 @@ func (set *IntSet) Add(elem int, useMutex bool) {
 	set.data[elem] = true
 }
 
-/* add elems into set */
+// Add elems into set
 func (set *IntSet) AddSlice(elems []int, useMutex bool) {
 	if useMutex {
 		set.Lock()
@@ -115,7 +112,7 @@ func (set *IntSet) AddSlice(elems []int, useMutex bool) {
 	}
 }
 
-/* return a int slice contains all elems of set in order */
+// ToSlice returns a int slice contains all elems of set in order
 func (set *IntSet) ToSlice(useMutex bool) []int {
 	var rlock, runlock func()
 	if useMutex {

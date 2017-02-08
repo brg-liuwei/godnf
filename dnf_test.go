@@ -1,6 +1,7 @@
 package godnf_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"testing"
@@ -48,8 +49,6 @@ var conds []dnf.Cond = []dnf.Cond{
 }
 
 func createDnfHandler(descs []string, useLock bool) *dnf.Handler {
-	dnf.SetDebug(true)
-
 	var h *dnf.Handler
 	if useLock {
 		h = dnf.NewHandler()
@@ -111,6 +110,127 @@ func ExampleRetrieval() {
 	// ( 10 -> doc-10 )
 	// after delete [10]:
 	// ( 8 -> doc-8 )
+}
+
+func ExampleDumpByPage() {
+	h := createDnfHandler(dnfDesc, false)
+
+	var m map[string]interface{}
+	json.Unmarshal(h.DumpByPage(10, 10), &m) // start out of range
+	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
+
+	json.Unmarshal(h.DumpByPage(1, 0), &m) // page size 0: dump all
+	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
+
+	json.Unmarshal(h.DumpByPage(1, 5), &m) // from page 1, page_size 5, return 5 elems
+	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
+
+	json.Unmarshal(h.DumpByPage(3, 4), &m) // page num 5: page_size 4, 11 elem totally, return last 3 elems
+	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
+
+	// Output:
+	// 11 0
+	// 11 11
+	// 11 5
+	// 11 3
+}
+
+func ExampleDumpByFilter() {
+	h := createDnfHandler(dnfDesc, false)
+
+	var m map[string]interface{}
+	json.Unmarshal(h.DumpByFilter(func(docAttr dnf.DocAttr) bool {
+		a := docAttr.(attr)
+		if a.docId < 3 {
+			return true
+		}
+		return false
+	}), &m)
+	fmt.Println(m["total_records"])
+
+	// Output:
+	// 3
+}
+
+func ExampleDumpById() {
+	h := createDnfHandler(dnfDesc, false)
+
+	var slice []interface{}
+	json.Unmarshal(h.DumpById(), &slice)
+	m2 := slice[2].(map[string]interface{})
+	fmt.Println(m2["name"])
+	fmt.Println(m2["docid"])
+
+	// Output:
+	// doc-2
+	// 2
+}
+
+func ExampleDumpByDocId() {
+	h := createDnfHandler(dnfDesc, false)
+
+	var m map[string]interface{}
+	json.Unmarshal(h.DumpByDocId(), &m)
+	m2 := m["2"].(map[string]interface{})
+	fmt.Println(m2["id"])
+	fmt.Println(m2["name"])
+
+	// Output:
+	// 2
+	// doc-2
+}
+
+func ExampleDumpByName() {
+	h := createDnfHandler(dnfDesc, false)
+
+	var m map[string]interface{}
+	json.Unmarshal(h.DumpByName(), &m)
+	mm := m["doc-2"].(map[string]interface{})
+	fmt.Println(mm["id"])
+	fmt.Println(mm["docid"])
+	fmt.Println(mm["active"])
+	fmt.Println(mm["dnf"])
+
+	// Output:
+	// 2
+	// 2
+	// true
+	// (region not in {WH, BJ} and age in {4, 5})
+}
+
+func ExampleDisplayMetaData() {
+	// dnfDesc[:2]:
+	// ( region ∈ { SH, BJ } ∩ age ∉ { 3, 4 } )
+	// ( region ∈ { HZ, SZ } ∩ gender ∈ { male } )
+	h := createDnfHandler(dnfDesc[:2], false)
+	dnf.SetDebug(true)
+
+	h.DeleteDoc("0")
+	h.DisplayDocs()
+	h.DisplayConjs()
+	h.DisplayAmts()
+	h.DisplayTerms()
+
+	// Output:
+	// len(docs): 2
+	// Doc[ 0 ](del): ( region ∈ { SH, BJ } ∩ age ∉ { 3, 4 } )
+	// Attr: ( 0 -> doc-0 )
+	// Doc[ 1 ]: ( region ∈ { HZ, SZ } ∩ gender ∈ { male } )
+	// Attr: ( 1 -> doc-1 )
+	// Conj[ 0 ] size: 1 , ( region ∈ { SH, BJ } ∩ age ∉ { 3, 4 } )
+	// Conj[ 1 ] size: 2 , ( region ∈ { HZ, SZ } ∩ gender ∈ { male } )
+	// Amt[ 0 ]: region ∈ { SH, BJ }
+	// Amt[ 1 ]: age ∉ { 3, 4 }
+	// Amt[ 2 ]: region ∈ { HZ, SZ }
+	// Amt[ 3 ]: gender ∈ { male }
+	// Term[ 0 ]: ∅
+	// Term[ 1 ]: ( region  SH )
+	// Term[ 2 ]: ( region  BJ )
+	// Term[ 3 ]: ( age  3 )
+	// Term[ 4 ]: ( age  4 )
+	// Term[ 5 ]: ( region  HZ )
+	// Term[ 6 ]: ( region  SZ )
+	// Term[ 7 ]: ( gender  male )
 }
 
 func BenchmarkRetrieval(b *testing.B) {

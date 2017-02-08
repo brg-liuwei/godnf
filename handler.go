@@ -27,12 +27,12 @@ func newRwLockWrapper(useLock bool) *rwLockWrapper {
 	return locker
 }
 
-/* dnf handler used to save docs and search docs */
+// Handler is used to save docs and search docs
 type Handler struct {
-	docs_       *docList
-	conjs_      *conjList
-	amts_       *amtList
-	terms_      *termList
+	docs        *docList
+	conjs       *conjList
+	amts        *amtList
+	terms       *termList
 	termMap     map[string]int
 	termMapLock *rwLockWrapper
 
@@ -45,12 +45,13 @@ type Handler struct {
 
 var currentHandler *Handler = nil
 
-/* create a dnf handler which is safe for concurrent use by multiple goroutines */
+// NewHandler creates a dnf handler which is safe for concurrent use by multiple goroutines
 func NewHandler() *Handler {
 	return newHandler(true)
 }
 
-/* create a dnf handler which is unsafe for concurrent use by multiple goroutines */
+// NewHandlerWithoutLock creates a dnf handler
+// which is unsafe for concurrent use by multiple goroutines
 func NewHandlerWithoutLock() *Handler {
 	return newHandler(false)
 }
@@ -65,19 +66,19 @@ func newHandler(useLock bool) *Handler {
 	conjSzRvs[0] = termrvslist
 
 	h := &Handler{
-		docs_: &docList{
+		docs: &docList{
 			docs:   make([]Doc, 0, 16),
 			locker: newRwLockWrapper(useLock),
 		},
-		conjs_: &conjList{
+		conjs: &conjList{
 			conjs:  make([]Conj, 0, 16),
 			locker: newRwLockWrapper(useLock),
 		},
-		amts_: &amtList{
+		amts: &amtList{
 			amts:   make([]Amt, 0, 16),
 			locker: newRwLockWrapper(useLock),
 		},
-		terms_: &termList{
+		terms: &termList{
 			terms:  terms,
 			locker: newRwLockWrapper(useLock),
 		},
@@ -89,19 +90,19 @@ func newHandler(useLock bool) *Handler {
 		conjSzRvs:     conjSzRvs,
 		conjSzRvsLock: newRwLockWrapper(useLock),
 	}
-	h.docs_.h = h
-	h.conjs_.h = h
-	h.amts_.h = h
-	h.terms_.h = h
+	h.docs.h = h
+	h.conjs.h = h
+	h.amts.h = h
+	h.terms.h = h
 	return h
 }
 
-/* get global handler */
+// GetHandler returns current global handler
 func GetHandler() *Handler {
 	return currentHandler
 }
 
-/* set `handler` to global handler */
+// SetHandler set parameter handler to global handler
 func SetHandler(handler *Handler) {
 	currentHandler = handler
 }
