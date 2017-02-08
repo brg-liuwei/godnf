@@ -129,7 +129,7 @@ func (doc *Doc) ToString(h *Handler) (s string) {
 func (dl *docList) display() {
 	dl.RLock()
 	defer dl.RUnlock()
-	DEBUG("len docs == ", len(dl.docs))
+	DEBUG("len(docs):", len(dl.docs))
 	for i, doc := range dl.docs {
 		if !doc.active {
 			DEBUG("Doc[", i, "](del):", doc.ToString(dl.h))

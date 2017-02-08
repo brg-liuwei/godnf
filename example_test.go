@@ -61,7 +61,13 @@ func Example() {
 	}
 	fmt.Println("docs:", docs)
 	for _, doc := range docs {
-		fmt.Println(h.DocId2Map(doc))
+		m := h.DocId2Map(doc)
+		fmt.Printf("doc[%d] map: height: %d, width: %d, duration: %d\n",
+			doc, m["height"], m["width"], m["duration"])
+		attr, _ := h.DocId2Attr(doc)
+		adAttr := attr.(adAttr)
+		fmt.Printf("doc[%d] attr: height: %d, width: %d, duration: %d\n",
+			doc, adAttr.h, adAttr.w, adAttr.duration)
 	}
 	h.DisplayDocs()
 
@@ -72,9 +78,11 @@ func Example() {
 
 	// Output:
 	// docs: [1 3]
-	// map[height:300 width:250 duration:15]
-	// map[height:300 width:250 duration:30]
-	// len docs ==  5
+	// doc[1] map: height: 300, width: 250, duration: 15
+	// doc[1] attr: height: 300, width: 250, duration: 15
+	// doc[3] map: height: 300, width: 250, duration: 30
+	// doc[3] attr: height: 300, width: 250, duration: 30
+	// len(docs): 5
 	// Doc[ 0 ]: ( region ∈ { ShangHai, Beijing } ∩ age ∉ { 3, 4 } )
 	// Attr: {height: 300, width: 250, duration: 20}
 	// Doc[ 1 ]: ( region ∈ { ShangHai, ShenZhen } ) ∪ ( age ∉ { 4, 6 } )

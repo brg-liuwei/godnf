@@ -32,4 +32,4 @@ bench:
 	go test -bench="." -cpu=${NCPU}
 
 clean:
-	rm -rf ${VARS} coverage.txt
+	rm -rf ${VARS} coverage.txt profile.out
