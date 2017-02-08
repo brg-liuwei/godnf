@@ -27,6 +27,7 @@ func newRwLockWrapper(useLock bool) *rwLockWrapper {
 	return locker
 }
 
+/* dnf handler used to save docs and search docs */
 type Handler struct {
 	docs_       *docList
 	conjs_      *conjList
@@ -44,10 +45,12 @@ type Handler struct {
 
 var currentHandler *Handler = nil
 
+/* create a dnf handler which is safe for concurrent use by multiple goroutines */
 func NewHandler() *Handler {
 	return newHandler(true)
 }
 
+/* create a dnf handler which is unsafe for concurrent use by multiple goroutines */
 func NewHandlerWithoutLock() *Handler {
 	return newHandler(false)
 }
@@ -58,8 +61,8 @@ func newHandler(useLock bool) *Handler {
 
 	termrvslist := make([]termRvs, 0, 1)
 	termrvslist = append(termrvslist, termRvs{termId: 0, cList: make([]cPair, 0)})
-	conjSzRvs_ := make([][]termRvs, 16)
-	conjSzRvs_[0] = termrvslist
+	conjSzRvs := make([][]termRvs, 16)
+	conjSzRvs[0] = termrvslist
 
 	h := &Handler{
 		docs_: &docList{
@@ -83,7 +86,7 @@ func newHandler(useLock bool) *Handler {
 
 		conjRvs:       make([][]int, 0),
 		conjRvsLock:   newRwLockWrapper(useLock),
-		conjSzRvs:     conjSzRvs_,
+		conjSzRvs:     conjSzRvs,
 		conjSzRvsLock: newRwLockWrapper(useLock),
 	}
 	h.docs_.h = h
@@ -93,10 +96,12 @@ func newHandler(useLock bool) *Handler {
 	return h
 }
 
+/* get global handler */
 func GetHandler() *Handler {
 	return currentHandler
 }
 
+/* set `handler` to global handler */
 func SetHandler(handler *Handler) {
 	currentHandler = handler
 }

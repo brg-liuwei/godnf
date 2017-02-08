@@ -6,11 +6,11 @@ import (
 	dnf "github.com/brg-liuwei/godnf"
 )
 
-func ExampleCondToString() {
+func ExampleConditionToString() {
 	conds := []dnf.Cond{
-		{"platform", "iOS"},
-		{"city", "ShangHai"},
-		{"gender", "female"},
+		{Key: "platform", Val: "iOS"},
+		{Key: "city", Val: "ShangHai"},
+		{Key: "gender", Val: "female"},
 	}
 
 	for _, cond := range conds {
@@ -24,9 +24,9 @@ func ExampleCondToString() {
 
 func ExampleConditionsToString() {
 	conds := []dnf.Cond{
-		{"platform", "iOS"},
-		{"city", "ShangHai"},
-		{"gender", "female"},
+		{Key: "platform", Val: "iOS"},
+		{Key: "city", Val: "ShangHai"},
+		{Key: "gender", Val: "female"},
 	}
 	fmt.Println(dnf.ConditionsToString(conds))
 	// Output:

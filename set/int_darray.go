@@ -8,20 +8,20 @@ var _x int
 var intSize int = int(unsafe.Sizeof(_x))
 var arrSize int = 1024 / intSize
 
-type IntDArray struct {
+type intDArray struct {
 	useMap bool
 	array  []int
 	m      map[int]int
 }
 
-func NewIntDArray() *IntDArray {
-	return &IntDArray{
+func newIntDArray() *intDArray {
+	return &intDArray{
 		useMap: false,
 		array:  make([]int, arrSize),
 	}
 }
 
-func (arr *IntDArray) Add(pos, val int) (newVal int) {
+func (arr *intDArray) Add(pos, val int) (newVal int) {
 	if pos < arrSize {
 		arr.array[pos] += val
 		return val
@@ -36,7 +36,7 @@ func (arr *IntDArray) Add(pos, val int) (newVal int) {
 	return
 }
 
-func (arr *IntDArray) Set(pos, val int) (oldVal int) {
+func (arr *intDArray) Set(pos, val int) (oldVal int) {
 	if pos < arrSize {
 		oldVal = arr.array[pos]
 		arr.array[pos] = val
@@ -53,7 +53,7 @@ func (arr *IntDArray) Set(pos, val int) (oldVal int) {
 	return
 }
 
-func (arr *IntDArray) Get(pos int) int {
+func (arr *intDArray) Get(pos int) int {
 	if pos < arrSize {
 		return arr.array[pos]
 	}

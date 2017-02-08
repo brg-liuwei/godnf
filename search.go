@@ -8,11 +8,36 @@ import (
 	"github.com/brg-liuwei/godnf/set"
 )
 
+/*
+   Cond: retrieval condition
+
+   A dnf like ({Country in {CN, RU, US}) can be retrievaled by Cond as follows:
+
+   Cond{
+       Key: "Country",
+       Val: "CN",
+   }
+
+   or
+
+   Cond{
+       Key: "Country",
+       Val: "RU",
+   }
+
+   or
+
+   Cond{
+       Key: "Country",
+       Val: "US",
+   }
+*/
 type Cond struct {
 	Key string
 	Val string
 }
 
+/* convert Cond to string for debug */
 func (c *Cond) ToString() string {
 	return fmt.Sprintf("(%s: %s)", c.Key, c.Val)
 }
@@ -31,6 +56,7 @@ func searchCondCheck(conds []Cond) error {
 	return nil
 }
 
+/* search docs which match conds and passed by attrFilter */
 func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []int, err error) {
 	if err := searchCondCheck(conds); err != nil {
 		return nil, err
@@ -46,6 +72,7 @@ func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []in
 	return h.doSearch(termids, attrFilter), nil
 }
 
+/* search all docs which match conds */
 func (h *Handler) SearchAll(conds []Cond) (docs []int, err error) {
 	return h.Search(conds, func(DocAttr) bool { return true })
 }
