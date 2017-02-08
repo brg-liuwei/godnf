@@ -5,11 +5,13 @@ import (
 	"sort"
 )
 
+/* attribute interface of doc */
 type DocAttr interface {
 	ToString() string
 	ToMap() map[string]interface{}
 }
 
+/* delete(lazy delete) doc from Handler by id */
 func (h *Handler) DeleteDoc(docid string) bool {
 	h.docs_.Lock()
 	defer h.docs_.Unlock()
@@ -155,10 +157,10 @@ func (h *Handler) amtBuild(key string, vals []string, belong bool) (amtId int) {
 }
 
 /*
-   doc: (age ∈ { 3, 4 } and state ∈ { NY } ) or ( state ∈ { CA } and gender ∈ { M } ) -->
+Doc: (age ∈ { 3, 4 } and state ∈ { NY } ) or ( state ∈ { CA } and gender ∈ { M } ) -->
 
-       conj1: (age ∈ { 3, 4 } and state ∈ { NY } )
-       conj2: ( state ∈ { CA } and gender ∈ { M } )
+    conj1: (age ∈ { 3, 4 } and state ∈ { NY } )
+    conj2: ( state ∈ { CA } and gender ∈ { M } )
 */
 type Doc struct {
 	id         int     /* unique id */
@@ -171,27 +173,31 @@ type Doc struct {
 	active     bool    /* for lazy delete */
 }
 
+/* get name of this doc */
 func (doc *Doc) GetName() string {
 	return doc.name
 }
 
+/* get id of this doc */
 func (doc *Doc) GetDocId() string {
 	return doc.docid
 }
 
+/* get dnf statement of this doc */
 func (doc *Doc) GetDnf() string {
 	return doc.dnf
 }
 
+/* get attribute of this doc */
 func (doc *Doc) GetAttr() DocAttr {
 	return doc.attr
 }
 
 /*
-   conjunction: age ∈ { 3, 4 } and state ∈ { NY } -->
+Conj(conjunction): age ∈ { 3, 4 } and state ∈ { NY } -->
 
-       assignment1: age ∈ { 3, 4 }
-       assignment2: state ∈ { NY }
+    assignment1: age ∈ { 3, 4 }
+    assignment2: state ∈ { NY }
 */
 type Conj struct {
 	id        int   /* unique id */
@@ -200,23 +206,23 @@ type Conj struct {
 	amts      []int /* assignments ids */
 }
 
-func (this *Conj) Equal(c *Conj) bool {
-	if !this.amtSorted {
-		sort.IntSlice(this.amts).Sort()
-		this.amtSorted = true
-	}
+func (c *Conj) Equal(conj *Conj) bool {
 	if !c.amtSorted {
 		sort.IntSlice(c.amts).Sort()
 		c.amtSorted = true
 	}
-	if this.size != c.size {
+	if !conj.amtSorted {
+		sort.IntSlice(conj.amts).Sort()
+		conj.amtSorted = true
+	}
+	if c.size != conj.size {
 		return false
 	}
-	if len(this.amts) != len(c.amts) {
+	if len(c.amts) != len(conj.amts) {
 		return false
 	}
-	for i, amtId := range this.amts {
-		if amtId != c.amts[i] {
+	for i, amtId := range c.amts {
+		if amtId != conj.amts[i] {
 			return false
 		}
 	}
@@ -224,10 +230,10 @@ func (this *Conj) Equal(c *Conj) bool {
 }
 
 /*
-   assignment: age ∈ { 3, 4 } -->
+Amt(assignment): age ∈ { 3, 4 } -->
 
-       term1: age ∈ { 3 }
-       term2: age ∈ { 4 }
+    term1: age ∈ { 3 }
+    term2: age ∈ { 4 }
 */
 type Amt struct {
 	id         int   /* unique id */
@@ -236,22 +242,22 @@ type Amt struct {
 	terms      []int /* terms ids */
 }
 
-func (this *Amt) Equal(amt *Amt) bool {
-	if !this.termSorted {
-		sort.IntSlice(this.terms).Sort()
-		this.termSorted = true
+func (a *Amt) Equal(amt *Amt) bool {
+	if !a.termSorted {
+		sort.IntSlice(a.terms).Sort()
+		a.termSorted = true
 	}
 	if !amt.termSorted {
 		sort.IntSlice(amt.terms).Sort()
 		amt.termSorted = true
 	}
-	if len(this.terms) != len(amt.terms) {
+	if len(a.terms) != len(amt.terms) {
 		return false
 	}
-	if this.belong != amt.belong {
+	if a.belong != amt.belong {
 		return false
 	}
-	for i, term := range this.terms {
+	for i, term := range a.terms {
 		if term != amt.terms[i] {
 			return false
 		}
@@ -260,8 +266,9 @@ func (this *Amt) Equal(amt *Amt) bool {
 }
 
 /*
-   term: state ∉ { CA }
-   Term{id: xxx, key: state, val: CA, belong: false}
+Term: state ∉ { CA }
+
+    eg: Term{id: xxx, key: state, val: CA, belong: false}
 */
 type Term struct {
 	id  int
@@ -269,8 +276,8 @@ type Term struct {
 	val string
 }
 
-func (this *Term) Equal(term *Term) bool {
-	if this.key == term.key && this.val == term.val {
+func (t *Term) Equal(term *Term) bool {
+	if t.key == term.key && t.val == term.val {
 		return true
 	}
 	return false
@@ -321,31 +328,31 @@ func (l *termList) RUnlock() { l.locker.RUnlock() }
 func (l *termList) Lock()    { l.locker.Lock() }
 func (l *termList) Unlock()  { l.locker.Unlock() }
 
-func (this *docList) Add(doc *Doc, h *Handler) int {
-	this.Lock()
-	defer this.Unlock()
-	doc.id = len(this.docs)
+func (dl *docList) Add(doc *Doc, h *Handler) int {
+	dl.Lock()
+	defer dl.Unlock()
+	doc.id = len(dl.docs)
 	if !doc.conjSorted {
 		sort.IntSlice(doc.conjs).Sort()
 		doc.conjSorted = true
 	}
-	this.docs = append(this.docs, *doc)
+	dl.docs = append(dl.docs, *doc)
 	return doc.id
 }
 
-func (this *conjList) Add(conj *Conj, h *Handler) (conjId int) {
-	this.Lock()
-	defer this.Unlock()
-	for i, c := range this.conjs {
+func (cl *conjList) Add(conj *Conj, h *Handler) (conjId int) {
+	cl.Lock()
+	defer cl.Unlock()
+	for i, c := range cl.conjs {
 		if c.Equal(conj) {
 			conj.id = c.id
 			return i
 		}
 	}
-	conj.id = len(this.conjs)
+	conj.id = len(cl.conjs)
 
 	/* append post list */
-	this.conjs = append(this.conjs, *conj)
+	cl.conjs = append(cl.conjs, *conj)
 
 	/* append reverse list */
 	h.conjRvsLock.Lock()
@@ -356,21 +363,21 @@ func (this *conjList) Add(conj *Conj, h *Handler) (conjId int) {
 	return conj.id
 }
 
-func (this *amtList) Add(amt *Amt, h *Handler) (amtId int) {
-	this.Lock()
-	defer this.Unlock()
-	for i, a := range this.amts {
+func (al *amtList) Add(amt *Amt, h *Handler) (amtId int) {
+	al.Lock()
+	defer al.Unlock()
+	for i, a := range al.amts {
 		if a.Equal(amt) {
 			amt.id = a.id
 			return i
 		}
 	}
-	amt.id = len(this.amts)
-	this.amts = append(this.amts, *amt)
+	amt.id = len(al.amts)
+	al.amts = append(al.amts, *amt)
 	return amt.id
 }
 
-func (this *termList) Add(term *Term, h *Handler) (termId int) {
+func (tl *termList) Add(term *Term, h *Handler) (termId int) {
 	h.termMapLock.RLock()
 	if tid, ok := h.termMap[term.key+"%"+term.val]; ok {
 		h.termMapLock.RUnlock()
@@ -379,10 +386,10 @@ func (this *termList) Add(term *Term, h *Handler) (termId int) {
 	}
 	h.termMapLock.RUnlock()
 
-	this.Lock()
-	term.id = len(this.terms)
-	this.terms = append(this.terms, *term)
-	this.Unlock()
+	tl.Lock()
+	term.id = len(tl.terms)
+	tl.terms = append(tl.terms, *term)
+	tl.Unlock()
 
 	h.termMapLock.Lock()
 	h.termMap[term.key+"%"+term.val] = term.id

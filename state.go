@@ -8,30 +8,50 @@ var leftDelimOfConj, rightDelimOfConj byte = byte('('), byte(')')
 var leftDelimOfSet, rightDelimOfSet byte = byte('{'), byte('}')
 var separatorOfSet byte = byte(',')
 
+/* set delim of conjunction */
 func SetDelimOfConj(left, right rune) {
 	leftDelimOfConj, rightDelimOfConj = byte(left), byte(right)
 }
 
+/*
+   get delim of conjunction
+
+   eg: if a dnf is like (Country in {CN, RU, US}),
+   this func will return rune('('), rune(')')
+*/
 func GetDelimOfConj() (left, right rune) {
 	return rune(leftDelimOfConj), rune(rightDelimOfConj)
 }
 
+/* set delim of set */
 func SetDelimOfSet(left, right rune) {
 	leftDelimOfSet, rightDelimOfSet = byte(left), byte(right)
 }
 
+/*
+   get delim of set
+
+   eg: if a dnf is like (Country in {CN, RU, US}),
+   this func will return rune('{'), rune('}')
+*/
 func GetDelimOfSet() (left, right rune) {
 	return rune(leftDelimOfSet), rune(rightDelimOfSet)
 }
 
+/* set separator of set */
 func SetSeparatorOfSet(sep rune) {
 	separatorOfSet = byte(sep)
 }
 
+/*
+   get separator of set
+   eg, the separator of set of a dnf like (Country in {CN, RU, US}) is rune(',')
+*/
 func GetSeparatorOfSet() rune {
 	return rune(separatorOfSet)
 }
 
+/* dnf format error */
 var DnfFmtError error = errors.New("dnf format error")
 
 func skipSpace(s *string, i int) int {
@@ -77,6 +97,7 @@ func dnfIdxCheck(dnf *string, i int, errmsg string) bool {
 	return true
 }
 
+/* check dnf syntax */
 func DnfCheck(dnf string) error {
 	return dnfStart(&dnf, skipSpace(&dnf, 0))
 }
