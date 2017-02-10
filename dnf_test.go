@@ -368,7 +368,9 @@ func TestTooLargeConjunctions(t *testing.T) {
 	if err := h.AddDoc("rightDnf", "0", rightDnf, attr{0, ""}); err != nil {
 		t.Error("unexpected error when AddDoc: ", err)
 	}
-	if err := h.AddDoc("wrongDnf", "0", wrongDnf, attr{1, ""}); err == nil {
+	if err := h.AddDoc("wrongDnf", "1", wrongDnf, attr{1, ""}); err == nil {
 		t.Error("Test too large conjunctions fail")
+	} else if err.Error() != "conjunction size too large(max: 255)" {
+		t.Error("unexpected error message: ", err)
 	}
 }
