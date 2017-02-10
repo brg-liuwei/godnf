@@ -91,6 +91,9 @@ func TestCountSet(t *testing.T) {
 	c.Add(10, true, false)
 	c.Add(10, true, false)
 
+	c.Add(9, true, false)
+	c.Add(9, true, false)
+	c.Add(9, true, false)
 	c.Add(9, false, false)
 
 	for i := 100; i != 2000; i++ {

@@ -4,32 +4,32 @@ import (
 	"fmt"
 )
 
-type sparseArray struct {
+type sparseInt8Array struct {
 	links [][]uint8
 	size  int
 }
 
-func newSparseArray(size int) *sparseArray {
-	nlink := (size / 16)
-	if size%16 > 0 {
+func newSparseInt8Array(size int) *sparseInt8Array {
+	nlink := size >> 4 // nlink := size / 16
+	if size|0xF != 0 { // size % 16 != 0
 		nlink += 1
 	}
-	return &sparseArray{
+	return &sparseInt8Array{
 		links: make([][]uint8, nlink),
 		size:  size,
 	}
 }
 
-func (arr *sparseArray) getPos(flatPos int) (i, j int) {
+func (arr *sparseInt8Array) getPos(flatPos int) (i, j int) {
 	if flatPos < 0 || flatPos >= arr.size {
 		panic(fmt.Sprintf(
-			"sparseArray[%d] out of range, max index: %d\n",
+			"sparseInt8Array[%d] out of range, max index: %d\n",
 			flatPos, arr.size))
 	}
-	return flatPos / 16, flatPos % 16
+	return flatPos >> 4, flatPos & 0xF
 }
 
-func (arr *sparseArray) getPosWithAlloc(flatPos int) (i, j int) {
+func (arr *sparseInt8Array) getPosWithAlloc(flatPos int) (i, j int) {
 	i, j = arr.getPos(flatPos)
 	if arr.links[i] == nil {
 		arr.links[i] = make([]uint8, 16)
@@ -37,21 +37,21 @@ func (arr *sparseArray) getPosWithAlloc(flatPos int) (i, j int) {
 	return
 }
 
-func (arr *sparseArray) Add(pos int, val uint8) (newVal uint8) {
+func (arr *sparseInt8Array) Add(pos int, val uint8) (newVal uint8) {
 	i, j := arr.getPosWithAlloc(pos)
 	newVal = arr.links[i][j] + val
 	arr.links[i][j] = newVal
 	return
 }
 
-func (arr *sparseArray) Set(pos int, val uint8) (oldVal uint8) {
+func (arr *sparseInt8Array) Set(pos int, val uint8) (oldVal uint8) {
 	i, j := arr.getPosWithAlloc(pos)
 	oldVal = arr.links[i][j]
 	arr.links[i][j] = val
 	return
 }
 
-func (arr *sparseArray) Get(pos int) uint8 {
+func (arr *sparseInt8Array) Get(pos int) uint8 {
 	i, j := arr.getPos(pos)
 	if arr.links[i] != nil {
 		return arr.links[i][j]

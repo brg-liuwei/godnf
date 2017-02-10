@@ -10,18 +10,18 @@ import (
 type CountSet struct {
 	sync.RWMutex
 	count    uint8
-	positive *sparseArray // use sparseArray instead of golang native map for better performance
-	negetive *sparseArray
-	result   *sparseArray
+	positive *sparseInt8Array // use sparseInt8Array instead of golang native map for better performance
+	negetive *sparseBoolArray // use sparseBoolArray instead of golang native map for better performance
+	result   *sparseBoolArray // use sparseBoolArray instead of golang native map for better performance
 }
 
 // NewCountSet creates a count set with positive `count`
 func NewCountSet(count uint8, setSize int) *CountSet {
 	return &CountSet{
 		count:    count,
-		positive: newSparseArray(setSize),
-		negetive: newSparseArray(setSize),
-		result:   newSparseArray(setSize),
+		positive: newSparseInt8Array(setSize),
+		negetive: newSparseBoolArray(setSize),
+		result:   newSparseBoolArray(setSize),
 	}
 }
 
@@ -33,11 +33,11 @@ func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	}
 
 	if !post {
-		set.negetive.Set(id, 1)
+		set.negetive.Set(id)
 	} else {
 		val := set.positive.Get(id)
 		if val+1 >= set.count {
-			set.result.Set(id, 1)
+			set.result.Set(id)
 		} else {
 			set.positive.Add(id, 1)
 		}
@@ -56,9 +56,12 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 
 	lock()
 	for i := range set.negetive.links {
-		for j, val := range set.negetive.links[i] {
-			if val > 0 {
-				set.result.Set(i*16+j, 0)
+		for j, bBlock := range set.negetive.links[i] {
+			flatBase := (i<<4 + j) << 3
+			for k, bVal := range bBlock.ToSlice() {
+				if bVal {
+					set.result.Reset(flatBase + k)
+				}
 			}
 		}
 	}
@@ -67,9 +70,12 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 	rlock()
 	rc := make([]int, 0, 8)
 	for i := range set.result.links {
-		for j, val := range set.result.links[i] {
-			if val > 0 {
-				rc = append(rc, i*16+j)
+		for j, bBlock := range set.result.links[i] {
+			flatBase := (i<<4 + j) << 3
+			for k, bVal := range bBlock.ToSlice() {
+				if bVal {
+					rc = append(rc, flatBase+k)
+				}
 			}
 		}
 	}
@@ -79,7 +85,7 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 	return rc
 }
 
-// IntSet: a set whose elems are integer
+// An IntSet is a set whose elems are integer
 type IntSet struct {
 	sync.RWMutex
 	data map[int]bool
