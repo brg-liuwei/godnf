@@ -44,12 +44,12 @@ func (arr *sparseInt8Array) Add(pos int, val uint8) (newVal uint8) {
 	return
 }
 
-func (arr *sparseInt8Array) Set(pos int, val uint8) (oldVal uint8) {
-	i, j := arr.getPosWithAlloc(pos)
-	oldVal = arr.links[i][j]
-	arr.links[i][j] = val
-	return
-}
+// func (arr *sparseInt8Array) Set(pos int, val uint8) (oldVal uint8) {
+// 	i, j := arr.getPosWithAlloc(pos)
+// 	oldVal = arr.links[i][j]
+// 	arr.links[i][j] = val
+// 	return
+// }
 
 func (arr *sparseInt8Array) Get(pos int) uint8 {
 	i, j := arr.getPos(pos)

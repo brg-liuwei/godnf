@@ -62,13 +62,13 @@ func (arr *sparseBoolArray) getPosWithAlloc(flatPos int) (i, j int) {
 	return
 }
 
-func (arr *sparseBoolArray) Get(pos int) bool {
-	i, j := arr.getPos(pos)
-	if arr.links[i] != nil {
-		return (uint8(arr.links[i][j]) & bit[pos&0x7]) != 0
-	}
-	return false
-}
+// func (arr *sparseBoolArray) Get(pos int) bool {
+// 	i, j := arr.getPos(pos)
+// 	if arr.links[i] != nil {
+// 		return (uint8(arr.links[i][j]) & bit[pos&0x7]) != 0
+// 	}
+// 	return false
+// }
 
 func (arr *sparseBoolArray) Set(pos int) (oldVal bool) {
 	i, j := arr.getPosWithAlloc(pos)
