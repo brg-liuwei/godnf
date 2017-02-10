@@ -101,6 +101,10 @@ func ExampleRetrieval() {
 	fmt.Println("after delete [10]:")
 	retrievalHelper(h)
 
+	if h.DeleteDoc("11") {
+		fmt.Println("delete un-exist doc, expected return false")
+	}
+
 	// Output:
 	// before delete:
 	// ( 5 -> doc-5 )
@@ -371,6 +375,19 @@ func TestTooLargeConjunctions(t *testing.T) {
 	if err := h.AddDoc("wrongDnf", "1", wrongDnf, attr{1, ""}); err == nil {
 		t.Error("Test too large conjunctions fail")
 	} else if err.Error() != "conjunction size too large(max: 255)" {
+		t.Error("unexpected error message: ", err)
+	}
+}
+
+func TestDocAdded(t *testing.T) {
+	h := dnf.NewHandlerWithoutLock()
+	if err := h.AddDoc("doc-0", "0", dnfDesc[0], attr{0, "doc-0"}); err != nil {
+		t.Error("unexpected error when AddDoc: ", err)
+	}
+	// re-add
+	if err := h.AddDoc("doc-0", "0", dnfDesc[0], attr{0, "doc-0"}); err == nil {
+		t.Error("Test add duplicate doc fail")
+	} else if err.Error() != "doc 0 has been added before" {
 		t.Error("unexpected error message: ", err)
 	}
 }
