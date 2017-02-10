@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	dnf "github.com/brg-liuwei/godnf"
@@ -351,4 +352,23 @@ func ExampleRetrievalWithCustomizedDelim() {
 	// ( 5 -> doc-5 )
 	// ( 8 -> doc-8 )
 	// ( 10 -> doc-10 )
+}
+
+func TestTooLargeConjunctions(t *testing.T) {
+	terms := make([]string, 0, 256)
+	for i := 0; i != 255; i++ {
+		terms = append(terms, fmt.Sprintf("key-%d in {%val-%d}", i, i))
+	}
+	rightDnf := "(" + strings.Join(terms, " and ") + ")"
+
+	terms = append(terms, "key-256 in {val-256}")
+	wrongDnf := "(" + strings.Join(terms, " and ") + ")"
+
+	h := dnf.NewHandlerWithoutLock()
+	if err := h.AddDoc("rightDnf", "0", rightDnf, attr{0, ""}); err != nil {
+		t.Error("unexpected error when AddDoc: ", err)
+	}
+	if err := h.AddDoc("wrongDnf", "0", wrongDnf, attr{1, ""}); err == nil {
+		t.Error("Test too large conjunctions fail")
+	}
 }
