@@ -5,24 +5,31 @@ import (
 	"sync"
 )
 
-// CountSet:
-// if an elem with enough positive count(>= set.count) and with no negetive count,
-// we define this elem is in the set
+const maxArraySize = 4096
+
+// A CountSet is a set if an elem with enough positive count(>= set.count)
+// and with no negetive count, we define this elem is in the set
 type CountSet struct {
 	sync.RWMutex
-	count    int
+	count    uint8
 	positive *intDArray // use intDArray instead of golang native map for better performance
 	negetive *intDArray
 	result   *intDArray
 }
 
 // NewCountSet creates a count set with positive `count`
-func NewCountSet(count int) *CountSet {
+func NewCountSet(count uint8, arraySize ...int) *CountSet {
+	var arrSize int
+	if len(arraySize) > 0 {
+		arrSize = arraySize[0]
+	} else {
+		arrSize = 256
+	}
 	return &CountSet{
 		count:    count,
-		positive: newIntDArray(),
-		negetive: newIntDArray(),
-		result:   newIntDArray(),
+		positive: newIntDArray(arrSize),
+		negetive: newIntDArray(arrSize),
+		result:   newIntDArray(arrSize),
 	}
 }
 

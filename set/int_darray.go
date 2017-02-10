@@ -1,34 +1,28 @@
 package set
 
-import (
-	"unsafe"
-)
-
-var _x int
-var intSize int = int(unsafe.Sizeof(_x))
-var arrSize int = 1024 / intSize
-
 type intDArray struct {
-	useMap bool
-	array  []int
-	m      map[int]int
+	useMap  bool
+	array   []uint8
+	arrSize int
+	m       map[int]uint8
 }
 
-func newIntDArray() *intDArray {
+func newIntDArray(arrSize int) *intDArray {
 	return &intDArray{
-		useMap: false,
-		array:  make([]int, arrSize),
+		useMap:  false,
+		array:   make([]uint8, arrSize),
+		arrSize: arrSize,
 	}
 }
 
-func (arr *intDArray) Add(pos, val int) (newVal int) {
-	if pos < arrSize {
+func (arr *intDArray) Add(pos int, val uint8) (newVal uint8) {
+	if pos < arr.arrSize {
 		arr.array[pos] += val
 		return val
 	}
 	if !arr.useMap {
 		arr.useMap = true
-		arr.m = make(map[int]int, 8)
+		arr.m = make(map[int]uint8, 8)
 	}
 	newVal = arr.m[pos]
 	newVal += val
@@ -36,15 +30,15 @@ func (arr *intDArray) Add(pos, val int) (newVal int) {
 	return
 }
 
-func (arr *intDArray) Set(pos, val int) (oldVal int) {
-	if pos < arrSize {
+func (arr *intDArray) Set(pos int, val uint8) (oldVal uint8) {
+	if pos < arr.arrSize {
 		oldVal = arr.array[pos]
 		arr.array[pos] = val
 		return
 	}
 	if !arr.useMap {
 		arr.useMap = true
-		arr.m = make(map[int]int, 8)
+		arr.m = make(map[int]uint8, 8)
 		oldVal = 0
 	} else {
 		oldVal = arr.m[pos]
@@ -53,8 +47,8 @@ func (arr *intDArray) Set(pos, val int) (oldVal int) {
 	return
 }
 
-func (arr *intDArray) Get(pos int) int {
-	if pos < arrSize {
+func (arr *intDArray) Get(pos int) uint8 {
+	if pos < arr.arrSize {
 		return arr.array[pos]
 	}
 	if arr.useMap {

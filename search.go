@@ -117,6 +117,8 @@ func (h *Handler) getConjs(terms []int) (conjs []int) {
 		n = len(h.conjSzRvs) - 1
 	}
 
+	ASSERT(n <= 255) // max(uint8) == 255
+
 	conjSet := set.NewIntSet()
 
 	for i := 0; i <= n; i++ {
@@ -125,7 +127,7 @@ func (h *Handler) getConjs(terms []int) (conjs []int) {
 			continue
 		}
 
-		countSet := set.NewCountSet(i)
+		countSet := set.NewCountSet(uint8(i), h.conjs.size())
 
 		for _, tid := range terms {
 			idx := sort.Search(len(termlist), func(i int) bool {
