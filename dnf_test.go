@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	dnf "github.com/brg-liuwei/godnf"
@@ -99,6 +100,10 @@ func ExampleRetrieval() {
 	// expected result: 8
 	fmt.Println("after delete [10]:")
 	retrievalHelper(h)
+
+	if h.DeleteDoc("11") {
+		fmt.Println("delete un-exist doc, expected return false")
+	}
 
 	// Output:
 	// before delete:
@@ -351,4 +356,38 @@ func ExampleRetrievalWithCustomizedDelim() {
 	// ( 5 -> doc-5 )
 	// ( 8 -> doc-8 )
 	// ( 10 -> doc-10 )
+}
+
+func TestTooLargeConjunctions(t *testing.T) {
+	terms := make([]string, 0, 256)
+	for i := 0; i != 255; i++ {
+		terms = append(terms, fmt.Sprintf("key-%d in {%val-%d}", i, i))
+	}
+	rightDnf := "(" + strings.Join(terms, " and ") + ")"
+
+	terms = append(terms, "key-256 in {val-256}")
+	wrongDnf := "(" + strings.Join(terms, " and ") + ")"
+
+	h := dnf.NewHandlerWithoutLock()
+	if err := h.AddDoc("rightDnf", "0", rightDnf, attr{0, ""}); err != nil {
+		t.Error("unexpected error when AddDoc: ", err)
+	}
+	if err := h.AddDoc("wrongDnf", "1", wrongDnf, attr{1, ""}); err == nil {
+		t.Error("Test too large conjunctions fail")
+	} else if err.Error() != "conjunction size too large(max: 255)" {
+		t.Error("unexpected error message: ", err)
+	}
+}
+
+func TestDocAdded(t *testing.T) {
+	h := dnf.NewHandlerWithoutLock()
+	if err := h.AddDoc("doc-0", "0", dnfDesc[0], attr{0, "doc-0"}); err != nil {
+		t.Error("unexpected error when AddDoc: ", err)
+	}
+	// re-add
+	if err := h.AddDoc("doc-0", "0", dnfDesc[0], attr{0, "doc-0"}); err == nil {
+		t.Error("Test add duplicate doc fail")
+	} else if err.Error() != "doc 0 has been added before" {
+		t.Error("unexpected error message: ", err)
+	}
 }

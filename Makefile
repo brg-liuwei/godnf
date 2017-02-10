@@ -23,7 +23,7 @@ cov:
 
 test:
 	go test
-	pushd set > /dev/null && go test && popd > /dev/null
+	go test github.com/brg-liuwei/godnf/set
 
 bench:
 	go test -bench="." -cpu=${NCPU}

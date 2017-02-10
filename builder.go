@@ -5,6 +5,8 @@ import (
 	"sort"
 )
 
+var conjSizeTooLargeError error = errors.New("conjunction size too large(max: 255)")
+
 // attribute interface of doc
 type DocAttr interface {
 	ToString() string
@@ -46,11 +48,10 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 	if err := DnfCheck(dnfDesc); err != nil {
 		return err
 	}
-	h.doAddDoc(name, docid, dnfDesc, attr)
-	return nil
+	return h.doAddDoc(name, docid, dnfDesc, attr)
 }
 
-func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) {
+func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) error {
 	doc := &Doc{
 		docid:  docid,
 		name:   name,
@@ -64,8 +65,11 @@ func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) 
 	var orStr string
 
 	i := skipSpace(&dnf, 0)
+	var err error
 	for {
-		i, conjId = h.conjParse(&dnf, i)
+		if i, conjId, err = h.conjParse(&dnf, i); err != nil {
+			return err
+		}
 		doc.conjs = append(doc.conjs, conjId)
 		i = skipSpace(&dnf, i+1)
 		if i >= len(dnf) {
@@ -77,10 +81,11 @@ func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) 
 	}
 	docInternalId := h.docs.Add(doc, h)
 	h.conjReverse1(docInternalId, doc.conjs)
+	return nil
 }
 
 // conj: ( age in {3, 4} and state not in {CA, NY } )
-func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int) {
+func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int, err error) {
 	var key, val string
 	var vals []string
 	var belong bool
@@ -126,6 +131,9 @@ func (h *Handler) conjParse(dnf *string, i int) (endIndex int, conjId int) {
 		conj.amts = append(conj.amts, amtId)
 		if belong {
 			conj.size++
+			if conj.size > 255 { // 255 == max(uint8)
+				return -1, -1, conjSizeTooLargeError
+			}
 		}
 
 		// get next assignment or end of this conjunction
@@ -292,6 +300,12 @@ func (cl *conjList) RLock()   { cl.locker.RLock() }
 func (cl *conjList) RUnlock() { cl.locker.RUnlock() }
 func (cl *conjList) Lock()    { cl.locker.Lock() }
 func (cl *conjList) Unlock()  { cl.locker.Unlock() }
+
+func (cl *conjList) size() int {
+	cl.locker.RLock()
+	defer cl.locker.RUnlock()
+	return len(cl.conjs)
+}
 
 type amtList struct {
 	locker *rwLockWrapper

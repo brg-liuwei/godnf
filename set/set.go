@@ -5,24 +5,23 @@ import (
 	"sync"
 )
 
-// CountSet:
-// if an elem with enough positive count(>= set.count) and with no negetive count,
-// we define this elem is in the set
+// A CountSet is a set if an elem with enough positive count(>= set.count)
+// and with no negetive count, we define this elem is in the set
 type CountSet struct {
 	sync.RWMutex
-	count    int
-	positive *intDArray // use intDArray instead of golang native map for better performance
-	negetive *intDArray
-	result   *intDArray
+	count    uint8
+	positive *sparseInt8Array // use sparseInt8Array instead of golang native map for better performance
+	negetive *sparseBoolArray // use sparseBoolArray instead of golang native map for better performance
+	result   *sparseBoolArray // use sparseBoolArray instead of golang native map for better performance
 }
 
 // NewCountSet creates a count set with positive `count`
-func NewCountSet(count int) *CountSet {
+func NewCountSet(count uint8, setSize int) *CountSet {
 	return &CountSet{
 		count:    count,
-		positive: newIntDArray(),
-		negetive: newIntDArray(),
-		result:   newIntDArray(),
+		positive: newSparseInt8Array(setSize),
+		negetive: newSparseBoolArray(setSize),
+		result:   newSparseBoolArray(setSize),
 	}
 }
 
@@ -34,11 +33,11 @@ func (set *CountSet) Add(id int, post bool, useMutex bool) {
 	}
 
 	if !post {
-		set.negetive.Set(id, 1)
+		set.negetive.Set(id)
 	} else {
 		val := set.positive.Get(id)
 		if val+1 >= set.count {
-			set.result.Set(id, 1)
+			set.result.Set(id)
 		} else {
 			set.positive.Add(id, 1)
 		}
@@ -54,26 +53,31 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 		nop := func() {}
 		lock, unlock, rlock, runlock = nop, nop, nop, nop
 	}
+
 	lock()
-	for pos, val := range set.negetive.array {
-		if val > 0 {
-			set.result.Set(pos, 0)
+	for i := range set.negetive.links {
+		for j, bBlock := range set.negetive.links[i] {
+			flatBase := (i<<4 + j) << 3
+			for k, bVal := range bBlock.ToSlice() {
+				if bVal {
+					set.result.Reset(flatBase + k)
+				}
+			}
 		}
-	}
-	for pos := range set.negetive.m {
-		delete(set.result.m, pos)
 	}
 	unlock()
 
 	rlock()
 	rc := make([]int, 0, 8)
-	for pos, val := range set.result.array {
-		if val > 0 {
-			rc = append(rc, pos)
+	for i := range set.result.links {
+		for j, bBlock := range set.result.links[i] {
+			flatBase := (i<<4 + j) << 3
+			for k, bVal := range bBlock.ToSlice() {
+				if bVal {
+					rc = append(rc, flatBase+k)
+				}
+			}
 		}
-	}
-	for pos := range set.result.m {
-		rc = append(rc, pos)
 	}
 	runlock()
 
@@ -81,7 +85,7 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 	return rc
 }
 
-// IntSet: a set whose elems are integer
+// An IntSet is a set whose elems are integer
 type IntSet struct {
 	sync.RWMutex
 	data map[int]bool
