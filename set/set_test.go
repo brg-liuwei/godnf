@@ -85,7 +85,7 @@ func BenchmarkIntParallelWithNCpu(b *testing.B) {
 }
 
 func TestCountSet(t *testing.T) {
-	c := set.NewCountSet(3)
+	c := set.NewCountSet(3, 2000)
 
 	c.Add(10, true, false)
 	c.Add(10, true, false)
@@ -98,13 +98,13 @@ func TestCountSet(t *testing.T) {
 	}
 
 	slice := c.ToSlice(false)
-	if len(slice) != 1 && slice[0] != 10 {
-		t.Error("test count set fail")
+	if len(slice) != 1 || slice[0] != 10 {
+		t.Errorf("test count set fail, slice: %v\n", slice)
 	}
 }
 
 func TestCountSetNegetive(t *testing.T) {
-	c := set.NewCountSet(3)
+	c := set.NewCountSet(3, 2000)
 
 	for i := 0; i != 2000; i++ {
 		// disable all slot
@@ -122,7 +122,7 @@ func TestCountSetNegetive(t *testing.T) {
 }
 
 func BenchmarkCountSetSerial(b *testing.B) {
-	s := set.NewCountSet(2)
+	s := set.NewCountSet(2, b.N)
 	for i := 0; i < b.N; i++ {
 		s.Add(i, true, false)
 		s.Add(i, true, false)
@@ -131,7 +131,7 @@ func BenchmarkCountSetSerial(b *testing.B) {
 }
 
 func BenchmarkCountSetParallel(b *testing.B) {
-	s := set.NewCountSet(3)
+	s := set.NewCountSet(3, 10)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			s.Add(rand.Intn(10), true, true)

@@ -5,31 +5,23 @@ import (
 	"sync"
 )
 
-const maxArraySize = 4096
-
 // A CountSet is a set if an elem with enough positive count(>= set.count)
 // and with no negetive count, we define this elem is in the set
 type CountSet struct {
 	sync.RWMutex
 	count    uint8
-	positive *intDArray // use intDArray instead of golang native map for better performance
-	negetive *intDArray
-	result   *intDArray
+	positive *sparseArray // use sparseArray instead of golang native map for better performance
+	negetive *sparseArray
+	result   *sparseArray
 }
 
 // NewCountSet creates a count set with positive `count`
-func NewCountSet(count uint8, arraySize ...int) *CountSet {
-	var arrSize int
-	if len(arraySize) > 0 {
-		arrSize = arraySize[0]
-	} else {
-		arrSize = 256
-	}
+func NewCountSet(count uint8, setSize int) *CountSet {
 	return &CountSet{
 		count:    count,
-		positive: newIntDArray(arrSize),
-		negetive: newIntDArray(arrSize),
-		result:   newIntDArray(arrSize),
+		positive: newSparseArray(setSize),
+		negetive: newSparseArray(setSize),
+		result:   newSparseArray(setSize),
 	}
 }
 
@@ -61,26 +53,25 @@ func (set *CountSet) ToSlice(useMutex bool) []int {
 		nop := func() {}
 		lock, unlock, rlock, runlock = nop, nop, nop, nop
 	}
+
 	lock()
-	for pos, val := range set.negetive.array {
-		if val > 0 {
-			set.result.Set(pos, 0)
+	for i := range set.negetive.links {
+		for j, val := range set.negetive.links[i] {
+			if val > 0 {
+				set.result.Set(i*16+j, 0)
+			}
 		}
-	}
-	for pos := range set.negetive.m {
-		delete(set.result.m, pos)
 	}
 	unlock()
 
 	rlock()
 	rc := make([]int, 0, 8)
-	for pos, val := range set.result.array {
-		if val > 0 {
-			rc = append(rc, pos)
+	for i := range set.result.links {
+		for j, val := range set.result.links[i] {
+			if val > 0 {
+				rc = append(rc, i*16+j)
+			}
 		}
-	}
-	for pos := range set.result.m {
-		rc = append(rc, pos)
 	}
 	runlock()
 
