@@ -194,7 +194,6 @@ func ExampleDumpByName() {
 	fmt.Println(mm["id"])
 	fmt.Println(mm["docid"])
 	fmt.Println(mm["active"])
-	fmt.Println(mm["comment"])
 	fmt.Println(mm["dnf"])
 
 	// Output:

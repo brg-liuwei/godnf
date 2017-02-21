@@ -54,12 +54,12 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 
 func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) error {
 	doc := &Doc{
-		docid:  docid,
-		name:   name,
-		dnf:    dnf,
-		conjs:  make([]int, 0),
-		attr:   attr,
-		active: true,
+		docid:   docid,
+		name:    name,
+		dnf:     dnf,
+		conjs:   make([]int, 0),
+		attr:    attr,
+		active:  true,
 		comment: "",
 	}
 
