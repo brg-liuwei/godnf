@@ -205,6 +205,7 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 			"name":   doc.name,
 			"docid":  doc.docid,
 			"active": doc.active,
+			"comment": doc.comment,
 			"dnf":    doc.dnf,
 			"attr":   doc.attr.ToMap(),
 		})
@@ -226,6 +227,7 @@ func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
 				"name":   doc.name,
 				"docid":  doc.docid,
 				"active": doc.active,
+				"comment": doc.comment,
 				"dnf":    doc.dnf,
 				"attr":   doc.attr.ToMap(),
 			})
@@ -246,6 +248,7 @@ func (h *Handler) DumpById() []byte {
 			"name":   doc.name,
 			"docid":  doc.docid,
 			"active": doc.active,
+			"comment": doc.comment,
 			"dnf":    doc.dnf,
 			"attr":   doc.attr.ToMap(),
 		})
@@ -262,6 +265,7 @@ func (h *Handler) DumpByDocId() []byte {
 			"id":     doc.id,
 			"name":   doc.name,
 			"active": doc.active,
+			"comment": doc.comment,
 			"dnf":    doc.dnf,
 			"attr":   doc.attr.ToMap(),
 		}
@@ -278,6 +282,7 @@ func (h *Handler) DumpByName() []byte {
 			"id":     doc.id,
 			"docid":  doc.docid,
 			"active": doc.active,
+			"comment": doc.comment,
 			"dnf":    doc.dnf,
 			"attr":   doc.attr.ToMap(),
 		}
