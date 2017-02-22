@@ -91,17 +91,17 @@ func ExampleRetrieval() {
 	// expected result: 5, 8, 10
 	retrievalHelper(h)
 
-	h.DeleteDoc("5")
+	h.DeleteDoc("5", "1")
 	fmt.Println("after delete [5]:")
 	// expected result: 8, 10
 	retrievalHelper(h)
 
-	h.DeleteDoc("10")
+	h.DeleteDoc("10", "2")
 	// expected result: 8
 	fmt.Println("after delete [10]:")
 	retrievalHelper(h)
 
-	if h.DeleteDoc("11") {
+	if h.DeleteDoc("11", "3") {
 		fmt.Println("delete un-exist doc, expected return false")
 	}
 
@@ -210,7 +210,7 @@ func ExampleDisplayMetaData() {
 	h := createDnfHandler(dnfDesc[:2], false)
 	dnf.SetDebug(true)
 
-	h.DeleteDoc("0")
+	h.DeleteDoc("0", "4")
 	h.DisplayDocs()
 	h.DisplayConjs()
 	h.DisplayAmts()

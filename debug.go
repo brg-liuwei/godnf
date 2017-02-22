@@ -202,11 +202,12 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	s := make([]interface{}, 0, len(h.docs.docs[start:end]))
 	for _, doc := range h.docs.docs[start:end] {
 		s = append(s, map[string]interface{}{
-			"name":   doc.name,
-			"docid":  doc.docid,
-			"active": doc.active,
-			"dnf":    doc.dnf,
-			"attr":   doc.attr.ToMap(),
+			"name":    doc.name,
+			"docid":   doc.docid,
+			"active":  doc.active,
+			"comment": doc.comment,
+			"dnf":     doc.dnf,
+			"attr":    doc.attr.ToMap(),
 		})
 	}
 
@@ -223,11 +224,12 @@ func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
 	for _, doc := range h.docs.docs {
 		if filter(doc.attr) {
 			s = append(s, map[string]interface{}{
-				"name":   doc.name,
-				"docid":  doc.docid,
-				"active": doc.active,
-				"dnf":    doc.dnf,
-				"attr":   doc.attr.ToMap(),
+				"name":    doc.name,
+				"docid":   doc.docid,
+				"active":  doc.active,
+				"comment": doc.comment,
+				"dnf":     doc.dnf,
+				"attr":    doc.attr.ToMap(),
 			})
 		}
 	}
@@ -243,11 +245,12 @@ func (h *Handler) DumpById() []byte {
 	var s []interface{}
 	for _, doc := range h.docs.docs {
 		s = append(s, map[string]interface{}{
-			"name":   doc.name,
-			"docid":  doc.docid,
-			"active": doc.active,
-			"dnf":    doc.dnf,
-			"attr":   doc.attr.ToMap(),
+			"name":    doc.name,
+			"docid":   doc.docid,
+			"active":  doc.active,
+			"comment": doc.comment,
+			"dnf":     doc.dnf,
+			"attr":    doc.attr.ToMap(),
 		})
 	}
 	b, _ := json.Marshal(s)
@@ -259,11 +262,12 @@ func (h *Handler) DumpByDocId() []byte {
 	m := make(map[string]interface{})
 	for _, doc := range h.docs.docs {
 		m[doc.docid] = map[string]interface{}{
-			"id":     doc.id,
-			"name":   doc.name,
-			"active": doc.active,
-			"dnf":    doc.dnf,
-			"attr":   doc.attr.ToMap(),
+			"id":      doc.id,
+			"name":    doc.name,
+			"active":  doc.active,
+			"comment": doc.comment,
+			"dnf":     doc.dnf,
+			"attr":    doc.attr.ToMap(),
 		}
 	}
 	b, _ := json.Marshal(m)
@@ -275,11 +279,12 @@ func (h *Handler) DumpByName() []byte {
 	m := make(map[string]interface{})
 	for _, doc := range h.docs.docs {
 		m[doc.name] = map[string]interface{}{
-			"id":     doc.id,
-			"docid":  doc.docid,
-			"active": doc.active,
-			"dnf":    doc.dnf,
-			"attr":   doc.attr.ToMap(),
+			"id":      doc.id,
+			"docid":   doc.docid,
+			"active":  doc.active,
+			"comment": doc.comment,
+			"dnf":     doc.dnf,
+			"attr":    doc.attr.ToMap(),
 		}
 	}
 	b, _ := json.Marshal(m)

@@ -14,7 +14,7 @@ type DocAttr interface {
 }
 
 // delete(lazy delete) doc from Handler by id
-func (h *Handler) DeleteDoc(docid string) bool {
+func (h *Handler) DeleteDoc(docid, comment string) bool {
 	h.docs.Lock()
 	defer h.docs.Unlock()
 	for i := 0; i != len(h.docs.docs); i++ {
@@ -22,6 +22,7 @@ func (h *Handler) DeleteDoc(docid string) bool {
 		if pdoc.docid == docid {
 			rc := pdoc.active
 			pdoc.active = false
+			pdoc.comment = comment
 			return rc
 		}
 	}
@@ -53,12 +54,13 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 
 func (h *Handler) doAddDoc(name string, docid string, dnf string, attr DocAttr) error {
 	doc := &Doc{
-		docid:  docid,
-		name:   name,
-		dnf:    dnf,
-		conjs:  make([]int, 0),
-		attr:   attr,
-		active: true,
+		docid:   docid,
+		name:    name,
+		dnf:     dnf,
+		conjs:   make([]int, 0),
+		attr:    attr,
+		active:  true,
+		comment: "",
 	}
 
 	var conjId int
@@ -174,6 +176,7 @@ type Doc struct {
 	conjs      []int   // conjunction ids
 	attr       DocAttr // ad attr
 	active     bool    // for lazy delete
+	comment    string  // comment for active
 }
 
 // GetName returns name of this doc
