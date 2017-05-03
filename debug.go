@@ -172,7 +172,7 @@ func (h *Handler) DocId2Map(docid int) map[string]interface{} {
 // DumpByPage: dump all docs by page_num and page_size for debug
 func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 	h.docs.RLock()
-	defer h.docs.RLock()
+	defer h.docs.RUnlock()
 
 	totalRcd := len(h.docs.docs)
 	start := (pageNum - 1) * pageSize
