@@ -220,6 +220,9 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 
 // DumpByFilter: dump docs by funnel func for debug
 func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
+	h.docs.RLock()
+	defer h.docs.RUnlock()
+
 	var s []interface{}
 	for _, doc := range h.docs.docs {
 		if filter(doc.attr) {
@@ -242,6 +245,9 @@ func (h *Handler) DumpByFilter(filter func(DocAttr) bool) []byte {
 
 // DumpById: dump all docs by id for debug
 func (h *Handler) DumpById() []byte {
+	h.docs.RLock()
+	defer h.docs.RUnlock()
+
 	var s []interface{}
 	for _, doc := range h.docs.docs {
 		s = append(s, map[string]interface{}{
@@ -259,6 +265,9 @@ func (h *Handler) DumpById() []byte {
 
 // DumpByDocId: dump all docs by docid for debug
 func (h *Handler) DumpByDocId() []byte {
+	h.docs.RLock()
+	defer h.docs.RUnlock()
+
 	m := make(map[string]interface{})
 	for _, doc := range h.docs.docs {
 		m[doc.docid] = map[string]interface{}{
@@ -276,6 +285,9 @@ func (h *Handler) DumpByDocId() []byte {
 
 // DumpByName: dump all docs by name for debug
 func (h *Handler) DumpByName() []byte {
+	h.docs.RLock()
+	defer h.docs.RUnlock()
+
 	m := make(map[string]interface{})
 	for _, doc := range h.docs.docs {
 		m[doc.name] = map[string]interface{}{
