@@ -22,8 +22,8 @@ cov:
 	rm profile.out
 
 test:
-	go test
-	go test github.com/brg-liuwei/godnf/set
+	go test -race github.com/brg-liuwei/godnf
+	go test -race github.com/brg-liuwei/godnf/set
 
 bench:
 	go test -bench="." -cpu=${NCPU}

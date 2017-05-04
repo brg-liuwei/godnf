@@ -2,6 +2,8 @@ package godnf
 
 import (
 	"sync"
+	"sync/atomic"
+	"unsafe"
 )
 
 type rwLockWrapper struct {
@@ -43,7 +45,7 @@ type Handler struct {
 	conjSzRvsLock *rwLockWrapper
 }
 
-var currentHandler *Handler = nil
+var currentHandler unsafe.Pointer = nil
 
 // NewHandler creates a dnf handler which is safe for concurrent use by multiple goroutines
 func NewHandler() *Handler {
@@ -99,10 +101,10 @@ func newHandler(useLock bool) *Handler {
 
 // GetHandler returns current global handler
 func GetHandler() *Handler {
-	return currentHandler
+	return (*Handler)(atomic.LoadPointer(&currentHandler))
 }
 
 // SetHandler set parameter handler to global handler
 func SetHandler(handler *Handler) {
-	currentHandler = handler
+	atomic.StorePointer(&currentHandler, unsafe.Pointer(handler))
 }
