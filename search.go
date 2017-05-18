@@ -53,6 +53,13 @@ func searchCondCheck(conds []Cond) error {
 	return nil
 }
 
+// Get doc size of current dnf
+func (h *Handler) GetDocSize() int {
+	h.docs.RLock()
+	defer h.docs.Unlock()
+	return len(h.docs)
+}
+
 // Search docs which match conds and passed by attrFilter
 func (h *Handler) Search(conds []Cond, attrFilter func(DocAttr) bool) (docs []int, err error) {
 	if err := searchCondCheck(conds); err != nil {
