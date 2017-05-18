@@ -57,7 +57,7 @@ func searchCondCheck(conds []Cond) error {
 func (h *Handler) GetDocSize() int {
 	h.docs.RLock()
 	defer h.docs.Unlock()
-	return len(h.docs)
+	return len(h.docs.docs)
 }
 
 // Search docs which match conds and passed by attrFilter
