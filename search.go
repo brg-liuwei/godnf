@@ -56,7 +56,7 @@ func searchCondCheck(conds []Cond) error {
 // Get doc size of current dnf
 func (h *Handler) GetDocSize() int {
 	h.docs.RLock()
-	defer h.docs.Unlock()
+	defer h.docs.RUnlock()
 	return len(h.docs.docs)
 }
 
