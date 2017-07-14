@@ -70,6 +70,7 @@ func newHandler(useLock bool) *Handler {
 	h := &Handler{
 		docs: &docList{
 			docs:   make([]Doc, 0, 16),
+			docMap: make(map[string]bool, 16),
 			locker: newRwLockWrapper(useLock),
 		},
 		conjs: &conjList{
