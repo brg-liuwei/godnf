@@ -34,16 +34,10 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 	f := func() error {
 		h.docs.RLock()
 		defer h.docs.RUnlock()
-		for _, doc := range h.docs.docs {
-			if doc.docid == docid {
-				return errors.New("doc " + docid + " has been added before")
-			}
+		if _, ok := h.docs.docMap[docid]; ok {
+			return errors.New("doc " + docid + " has been added before")
 		}
-		return nil
-	}
 
-	if err := f(); err != nil {
-		return err
 	}
 
 	if err := DnfCheck(dnfDesc); err != nil {
@@ -285,6 +279,7 @@ func (t *Term) Equal(term *Term) bool {
 type docList struct {
 	locker *rwLockWrapper
 	docs   []Doc
+	docMap map[string]bool
 	h      *Handler
 }
 
@@ -335,6 +330,7 @@ func (tl *termList) Unlock()  { tl.locker.Unlock() }
 func (dl *docList) Add(doc *Doc, h *Handler) int {
 	dl.Lock()
 	defer dl.Unlock()
+	dl.docMap[doc.docid] = true
 	doc.id = len(dl.docs)
 	if !doc.conjSorted {
 		sort.IntSlice(doc.conjs).Sort()
