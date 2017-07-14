@@ -37,7 +37,11 @@ func (h *Handler) AddDoc(name string, docid string, dnfDesc string, attr DocAttr
 		if _, ok := h.docs.docMap[docid]; ok {
 			return errors.New("doc " + docid + " has been added before")
 		}
+		return nil
+	}
 
+	if err := f(); err != nil {
+		return err
 	}
 
 	if err := DnfCheck(dnfDesc); err != nil {
