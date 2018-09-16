@@ -121,16 +121,16 @@ func ExampleDumpByPage() {
 	h := createDnfHandler(dnfDesc, false)
 
 	var m map[string]interface{}
-	json.Unmarshal(h.DumpByPage(10, 10), &m) // start out of range
+	json.Unmarshal(h.DumpByPage(10, 10, func(dnf.DocAttr) bool { return true }), &m) // start out of range
 	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
 
-	json.Unmarshal(h.DumpByPage(1, 0), &m) // page size 0: dump all
+	json.Unmarshal(h.DumpByPage(1, 0, func(dnf.DocAttr) bool { return true }), &m) // page size 0: dump all
 	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
 
-	json.Unmarshal(h.DumpByPage(1, 5), &m) // from page 1, page_size 5, return 5 elems
+	json.Unmarshal(h.DumpByPage(1, 5, func(dnf.DocAttr) bool { return true }), &m) // from page 1, page_size 5, return 5 elems
 	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
 
-	json.Unmarshal(h.DumpByPage(3, 4), &m) // page num 5: page_size 4, 11 elem totally, return last 3 elems
+	json.Unmarshal(h.DumpByPage(3, 4, func(dnf.DocAttr) bool { return true }), &m) // page num 5: page_size 4, 11 elem totally, return last 3 elems
 	fmt.Println(m["total_records"], len(m["data"].([]interface{})))
 
 	// Output:
@@ -361,7 +361,7 @@ func ExampleRetrievalWithCustomizedDelim() {
 func TestTooLargeConjunctions(t *testing.T) {
 	terms := make([]string, 0, 256)
 	for i := 0; i != 255; i++ {
-		terms = append(terms, fmt.Sprintf("key-%d in {%val-%d}", i, i))
+		terms = append(terms, fmt.Sprintf("key-%d in {val-%d}", i, i))
 	}
 	rightDnf := "(" + strings.Join(terms, " and ") + ")"
 

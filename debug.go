@@ -170,7 +170,7 @@ func (h *Handler) DocId2Map(docid int) map[string]interface{} {
 }
 
 // DumpByPage: dump all docs by page_num and page_size for debug
-func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
+func (h *Handler) DumpByPage(pageNum, pageSize int, filter func(DocAttr) bool) []byte {
 	h.docs.RLock()
 	defer h.docs.RUnlock()
 
@@ -201,14 +201,16 @@ func (h *Handler) DumpByPage(pageNum, pageSize int) []byte {
 
 	s := make([]interface{}, 0, len(h.docs.docs[start:end]))
 	for _, doc := range h.docs.docs[start:end] {
-		s = append(s, map[string]interface{}{
-			"name":    doc.name,
-			"docid":   doc.docid,
-			"active":  doc.active,
-			"comment": doc.comment,
-			"dnf":     doc.dnf,
-			"attr":    doc.attr.ToMap(),
-		})
+		if filter(doc.attr) {
+			s = append(s, map[string]interface{}{
+				"name":    doc.name,
+				"docid":   doc.docid,
+				"active":  doc.active,
+				"comment": doc.comment,
+				"dnf":     doc.dnf,
+				"attr":    doc.attr.ToMap(),
+			})
+		}
 	}
 
 	b, _ := json.Marshal(map[string]interface{}{
